@@ -1,0 +1,12 @@
+# Instance state. Belongs to this machine, not to the agency repo.
+agency:
+  root: {{AGENCY_ROOT}}
+  opened: {{DATE}}
+
+agents:
+  - name: {{AGENT_NAME}}
+    title: "{{TITLE}}"
+    folder: {{AGENT_FOLDER}}
+    session_id: {{SESSION_ID}}
+    display_name: {{DISPLAY_NAME}}
+    status: active
