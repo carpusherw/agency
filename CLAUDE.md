@@ -53,6 +53,10 @@ produces something that looks right and is not.
   transcript, drops out of `claude agents`, and its id cannot be resumed — so
   the scaffold sends a first prompt rather than leaving the agent idle. One
   exchange is enough to make the session durable.
+- **A session name loses a zero-width joiner.** U+200D is replaced with a
+  space, so a combined emoji such as 🧑‍💼 arrives as `🧑 💼`. Everything else
+  survives byte-exact, variation selectors included, so agency emoji are
+  restricted to a single glyph and the script rejects the rest.
 - **`--name` is per launch, not stored with the session.** It sets the title
   shown in `claude agents`; omit it on a resume and the view retitles the
   session from its content. Anything that launches an agent must pass it every
