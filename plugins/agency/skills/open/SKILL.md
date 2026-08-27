@@ -24,13 +24,22 @@ separate jobs.
 
 ### 1. What is the agency called?
 
-Suggest a name rather than asking cold. Base it on what this person actually
-works on — infer it from the conversation, from the repositories around them,
-or by asking what the agency is for. An office has a name, not a job
-description, so something with a little character beats something literal.
+Suggest a few, drawn from what this person actually works on — the
+conversation, the repositories around them, or by asking what the agency is
+for. An office has a name, not a job description, so something with a little
+character beats something literal.
 
-Offer an emoji with it, and show the two together exactly as they will appear
-in `claude agents`:
+Include a "let me name it myself" choice alongside them, spelled out as one of
+the choices — the interface's own free-text option appears on some questions and
+not others, so do not rely on it. Whatever they answer is the name, including
+something that means nothing to you.
+
+Pair each suggestion with an emoji, so the choice is the whole prefix rather
+than half of it. If they name the agency themselves, suggest an emoji for it
+afterwards.
+
+Show what the pair becomes, so the choice is concrete — this is the prefix on
+every agent's session in `claude agents`:
 
 ```
 🏢 [MIB]: Agent O
@@ -47,11 +56,11 @@ Default `~/agency`.
 
 ### 3. What should this agent be called?
 
-Invent a name and offer it, rather than asking the user to produce one cold —
-something short and pronounceable that reads as an identity. Any name a
-directory can carry works, in any language; it does not have to be English or
-lowercase. The name is an identity, not a job title — the title is a separate
-field, so it does not need to describe the work.
+Suggest a few — short, pronounceable, reading as an identity rather than a role
+— and carry the same "let me name it myself" choice. Any name a directory can
+hold works, in any language; it does not have to be English or lowercase. The
+name is an identity, not a job title: the title is a separate field, so it does
+not need to describe the work.
 
 ### 4. What is this agent for?
 
