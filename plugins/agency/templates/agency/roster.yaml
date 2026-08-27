@@ -1,12 +1,12 @@
 # Instance state. Belongs to this machine, not to the agency repo.
 agency:
-  root: {{AGENCY_ROOT}}
+  root: {{AGENCY_ROOT_YAML}}
   opened: {{DATE}}
 
 agents:
-  - name: {{AGENT_NAME}}
-    title: "{{TITLE}}"
-    folder: {{AGENT_FOLDER}}
+  - name: {{AGENT_NAME_YAML}}
+    title: {{TITLE_YAML}}
+    folder: {{AGENT_FOLDER_YAML}}
     session_id: {{SESSION_ID}}
-    display_name: {{DISPLAY_NAME}}
+    display_name: {{DISPLAY_NAME_YAML}}
     status: active

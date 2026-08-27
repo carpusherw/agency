@@ -1,6 +1,7 @@
 # agency
 
-An office of long-lived agents, built on stock Claude Code.
+An office of long-lived agents. It adds no infrastructure of its own — an
+agency is a directory, and the agents are ordinary Claude Code sessions.
 
 An **agency** is a directory of agents. Each agent has its own folder, its own
 profile (`CLAUDE.md`), its own permission scope (`.claude/settings.json`), a
@@ -17,8 +18,9 @@ This repo is the **mechanism** — a Claude Code plugin holding skills, template
 and scripts. It is shareable.
 
 Your **agency** is instance state and lives elsewhere (default `~/agency`):
-the roster, the agents, their memory. It is never checked in here. `agency:open`
-makes it a local git repo with no remote, so you get history without exposure.
+the roster, the agents, their memory. It is never checked in here, and what you
+do with it afterwards — version it, back it up, leave it alone — is yours to
+decide.
 
 ## Install
 
@@ -33,9 +35,8 @@ Then, in Claude Code:
 /agency:open
 ```
 
-It asks three things — where the agency lives, what the first agent is called
-(a random name is suggested), and whether to keep the default job description
-or change it — and creates:
+It asks where the agency lives, offers a name for the first agent, and works
+with you on that agent's job description until you accept it. Then it creates:
 
 ```
 ~/agency/
@@ -52,13 +53,16 @@ or change it — and creates:
 
 ```
 cd ~/agency/agents/<name>
-claude --session-id <id> --name agency:<name>   # first time
-claude --resume <id>                            # every time after
+claude --continue                  # resumes that agent
 ```
 
+`--continue` picks up the most recent session in the current directory, and
+each agent has its own directory — so you never type a session id. The
+`session_id` in the roster is the durable address for naming one exact session
+(`claude --resume <id>`) and for finding the agent among live sessions.
+
 Agents address each other by display name via `SendMessage`; `claude agents
---json` reports who is actually live. The roster stores the permanent session
-id, so liveness is derived rather than tracked.
+--json` reports who is actually live.
 
 ## Layout
 
@@ -68,14 +72,7 @@ plugins/agency/
   .claude-plugin/plugin.json
   skills/open/SKILL.md         the interview
   scripts/agency-init.sh       the deterministic scaffold
-  scripts/random-name.sh
   templates/agency/            shared CLAUDE.md, roster.yaml
   templates/agent/             profile, STATE.md, settings.json
   templates/jd/ea.md           default executive-assistant job description
 ```
-
-## Scope
-
-v1 opens an agency and hires one agent. Hiring more agents, archiving them, and
-migrating an older layout are deliberately not here yet — they get added when
-there is a real use case, not an imagined one.

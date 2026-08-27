@@ -13,15 +13,3 @@
 
 - Folder: `{{AGENT_FOLDER}}`
 - Session id: `{{SESSION_ID}}`
-
-Resume this agent:
-
-```
-claude --resume {{SESSION_ID}}
-```
-
-Start it for the first time:
-
-```
-claude --session-id {{SESSION_ID}} --name {{DISPLAY_NAME}}
-```

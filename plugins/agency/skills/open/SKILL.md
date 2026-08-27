@@ -15,57 +15,66 @@ live in files.
 
 ## Gate
 
-The agency root must not already exist. If `roster.yaml` is there, stop and
-tell the user the agency is already open — do not merge, repair, or migrate.
+The agency root must be empty or absent. If it holds a `roster.yaml`, the
+agency is already open — say so and stop. Do not merge, repair, or migrate.
 Adding agents to an existing agency, and migrating an older layout, are
 separate jobs.
 
 ## Interview
 
-Prepare first, so the user sees concrete defaults rather than blanks:
+### 1. Where should the agency live?
+
+Default `~/agency`.
+
+### 2. What should this agent be called?
+
+Invent a name and offer it, rather than asking the user to produce one cold —
+something short and pronounceable that reads as an identity. Any name a
+directory can carry works, in any language; it does not have to be English or
+lowercase. The name is an identity, not a job title — the title is a separate
+field, so it does not need to describe the work.
+
+### 3. What is this agent for?
+
+Start from the default executive-assistant job description:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/random-name.sh          # a name to suggest
-cat ${CLAUDE_PLUGIN_ROOT}/templates/jd/ea.md          # the default job description
+cat ${CLAUDE_PLUGIN_ROOT}/templates/jd/ea.md
 ```
 
-Then ask:
+Show it in full and ask whether to use it as is, or what to change.
 
-1. **Where should the agency live?** Default `~/agency`.
-2. **What should this agent be called?** Suggest the generated name. Any
-   lowercase `[a-z0-9_-]` name works. The name is an identity, not a job title —
-   the title is a separate field, so a neutral name is fine.
-3. **Show the default job description in full**, then ask whether to use it as
-   is or how they want it changed. Take whatever they give you: a note to
-   rewrite a section, a replacement, additions, a different role entirely. Do
-   not compress their answer into one line and do not cap its length — this
-   text becomes the agent's profile and shapes everything it does.
+**Then iterate.** A vague answer — "make it more hands-on", "it should handle
+my email too", "less formal" — is a normal answer, not a request for
+clarification. Rewrite the job description yourself to match it, show the new
+version, and ask again. Keep going until the user accepts it. Do not hand the
+drafting back to them, do not ask them to write the text, and do not cap the
+length. This becomes the agent's profile and shapes everything it does.
 
-If they change the role substantially, set a title to match. Otherwise the
-title is `Executive Assistant`.
+If the role drifts away from an executive assistant, set a title to match.
+Otherwise the title is `Executive Assistant`.
 
-Do not ask about permissions, budgets, or conventions. Agents are created in
-`auto` permission mode via their own `.claude/settings.json`, and shared
-conventions come from the agency's `CLAUDE.md`. Both are files the user can
-edit afterwards.
+Do not ask about permissions or conventions. Agents are created in `auto`
+permission mode via their own `.claude/settings.json`, and shared conventions
+come from the agency's `CLAUDE.md`. Both are files the user can edit
+afterwards.
 
 ## Open it
 
-Write the final job description to a file, then run:
+Write the accepted job description to a file, then run:
 
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/agency-init.sh \
-  --root <root> --jd-file <path> [--name <name>] [--title <title>]
+  --root <root> --name <name> --jd-file <path> [--title <title>]
 ```
 
-Omit `--name` to let it pick a random one. It creates the tree, assigns the
-session id, writes `roster.yaml`, and makes the agency root a local git
-repository with no remote — history for the roster without any sharing risk.
+It creates the tree, assigns the session id, and writes `roster.yaml`.
 
 ## Report
 
 Show the tree that was created, then the two commands the script printed: how
-to start the agent for the first time, and how to resume it.
+to start the agent for the first time, and how to resume it afterwards with
+`claude --continue` from its own folder.
 
 Point out that the agent's profile (`agents/<name>/CLAUDE.md`) and the agency's
 shared conventions (`CLAUDE.md`) are meant to be edited by hand as the role
