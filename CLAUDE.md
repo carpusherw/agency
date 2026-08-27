@@ -57,6 +57,11 @@ produces something that looks right and is not.
   space, so a combined emoji such as 🧑‍💼 arrives as `🧑 💼`. Everything else
   survives byte-exact, variation selectors included, so agency emoji are
   restricted to a single glyph and the script rejects the rest.
+- **An `AskUserQuestion` option carrying a `preview` costs the question its
+  `Type something.` row.** The preview switches the prompt to a side-by-side
+  layout and the typed-answer row does not come with it, so a question that
+  needs a free-typed answer cannot also preview its options. Option count is not
+  the constraint — four options and the row coexist.
 - **`--name` is per launch, not stored with the session.** It sets the title
   shown in `claude agents`; omit it on a resume and the view retitles the
   session from its content. Anything that launches an agent must pass it every

@@ -27,23 +27,11 @@ separate jobs.
 Suggest a few, drawn from what this person actually works on — the
 conversation, the repositories around them, or by asking what the agency is
 for. An office has a name, not a job description, so something with a little
-character beats something literal.
+character beats something literal. Put each one's emoji in the option itself, so
+a choice reads as `🧭 Waypoint`.
 
-Include a "let me name it myself" choice alongside them, spelled out as one of
-the choices — the interface's own free-text option appears on some questions and
-not others, so do not rely on it. Whatever they answer is the name, including
-something that means nothing to you.
-
-Pair each suggestion with an emoji, so the choice is the whole prefix rather
-than half of it. If they name the agency themselves, suggest an emoji for it
-afterwards.
-
-Show what the pair becomes, so the choice is concrete — this is the prefix on
-every agent's session in `claude agents`:
-
-```
-🏢 [MIB]: Agent O
-```
+The suggestions are a starting point — whatever they answer is the name. If they
+name it themselves, suggest an emoji afterwards.
 
 The emoji must be a single one, with no zero-width joiner. A combined emoji
 like 🧑‍💼 — person, joiner, briefcase — is split apart in a session name and
@@ -56,11 +44,10 @@ Default `~/agency`.
 
 ### 3. What should this agent be called?
 
-Suggest a few — short, pronounceable, reading as an identity rather than a role
-— and carry the same "let me name it myself" choice. Any name a directory can
-hold works, in any language; it does not have to be English or lowercase. The
-name is an identity, not a job title: the title is a separate field, so it does
-not need to describe the work.
+Suggest a few — short, pronounceable, reading as an identity rather than a role.
+Any name a directory can hold works, in any language; it does not have to be
+English or lowercase. The name is an identity, not a job title: the title is a
+separate field, so it does not need to describe the work.
 
 ### 4. What is this agent for?
 
