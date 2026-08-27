@@ -73,7 +73,6 @@ export AGENT_NAME="$NAME"
 export AGENT_FOLDER
 export TITLE
 export JD="$(cat "$JD_FILE")"
-export SESSION_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
 export DISPLAY_NAME="agency:$NAME"
 export DATE="$(date +%Y-%m-%d)"
 export AGENCY_ROOT_YAML="$(yaml_quote "$ROOT")"
@@ -92,7 +91,6 @@ render() {
 mkdir -p "$AGENT_DIR/journal" "$AGENT_DIR/.claude"
 
 render "$PLUGIN/templates/agency/CLAUDE.md"    "$ROOT/CLAUDE.md"
-render "$PLUGIN/templates/agency/roster.yaml"  "$ROOT/roster.yaml"
 render "$PLUGIN/templates/agent/CLAUDE.md"     "$AGENT_DIR/CLAUDE.md"
 render "$PLUGIN/templates/agent/STATE.md"      "$AGENT_DIR/STATE.md"
 cp     "$PLUGIN/templates/agent/settings.json" "$AGENT_DIR/.claude/settings.json"
@@ -102,18 +100,78 @@ cp     "$PLUGIN/templates/agent/settings.json" "$AGENT_DIR/.claude/settings.json
 Q_DIR="$(printf %q "$AGENT_DIR")"
 Q_NAME="$(printf %q "$DISPLAY_NAME")"
 
+# Start the agent in the background and record the id it is given.
+#
+# --bg assigns its own session id and ignores --session-id, so the roster can
+# only hold a real id by reading it back after the fact. The agent is given a
+# first prompt rather than being left idle: a background session that is never
+# prompted writes no transcript, is dropped from `claude agents`, and leaves an
+# id that cannot be resumed. One exchange makes it durable.
+#
+# Every failure here is non-fatal — the agency is already written and stays
+# valid without an id.
+CLOCK_IN="You have just been hired. Read your profile and STATE.md, then say in one line who you are and that you are on duty."
+SESSION_ID=""
+LAUNCH_NOTE=""
+if ! command -v claude >/dev/null 2>&1; then
+  LAUNCH_NOTE="claude is not on PATH, so the agent was not started"
+elif ! command -v jq >/dev/null 2>&1; then
+  LAUNCH_NOTE="jq is not on PATH, so the session id could not be read back"
+elif launch_err="$( (cd "$AGENT_DIR" && claude --bg --name "$DISPLAY_NAME" "$CLOCK_IN") 2>&1 >/dev/null )"; then
+  PHYS="$(cd "$AGENT_DIR" && pwd -P)"
+  for _ in 1 2 3 4 5; do
+    SESSION_ID="$(claude agents --json 2>/dev/null \
+      | jq -r --arg c "$PHYS" '[.[] | select(.cwd == $c)] | last | .sessionId // empty' 2>/dev/null || true)"
+    [ -n "$SESSION_ID" ] && break
+    sleep 1
+  done
+  [ -n "$SESSION_ID" ] || LAUNCH_NOTE="the agent started, but its session id could not be read back"
+else
+  LAUNCH_NOTE="the agent could not be started: $(printf '%s' "$launch_err" | tail -1)"
+fi
+
+if [ -n "$SESSION_ID" ]; then
+  export SESSION_ID_YAML="$(yaml_quote "$SESSION_ID")"
+else
+  export SESSION_ID_YAML="null"
+fi
+render "$PLUGIN/templates/agency/roster.yaml" "$ROOT/roster.yaml"
+
 cat <<REPORT
 agency opened at $ROOT
 
   agent        $NAME
   title        $TITLE
   folder       $AGENT_DIR
-  session id   $SESSION_ID
   display name $DISPLAY_NAME
-
-start the agent:
-  cd $Q_DIR && claude --session-id $SESSION_ID --name $Q_NAME
-
-resume it later:
-  cd $Q_DIR && claude --continue
 REPORT
+
+if [ -n "$SESSION_ID" ]; then
+  cat <<REPORT
+  session id   $SESSION_ID
+
+The agent is running in the background and has read its profile.
+
+open it in this terminal:
+  claude attach ${SESSION_ID%%-*}
+
+or pick it out of:
+  claude agents
+
+if it is ever stopped, start it again with:
+  cd $Q_DIR && claude --bg --resume $SESSION_ID --name $Q_NAME
+REPORT
+else
+  cat <<REPORT
+
+The agency is ready, but $LAUNCH_NOTE.
+Start the agent yourself, then put its id in roster.yaml:
+
+  cd $Q_DIR && claude --bg --name $Q_NAME '$CLOCK_IN'
+  claude agents --json
+
+The prompt matters: a background session that is never prompted writes no
+transcript and drops out of \`claude agents\`, leaving an id that cannot be
+resumed.
+REPORT
+fi
