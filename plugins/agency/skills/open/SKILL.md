@@ -70,13 +70,21 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/agency-init.sh \
   --root <root> --name <name> --jd-file <path> [--title <title>]
 ```
 
-It creates the tree, assigns the session id, and writes `roster.yaml`.
+It creates the tree, starts the agent as a background session, reads back the
+session id it was given, and writes `roster.yaml`.
+
+The agent is started rather than left for the user to launch because `--bg`
+assigns its own session id: the roster can only record a real one by reading it
+back afterwards. If the launch fails the script still succeeds — the agency is
+written, `session_id` is left null, and the report says how to start the agent
+by hand.
 
 ## Report
 
-Show the tree that was created, then the two commands the script printed: how
-to start the agent for the first time, and how to resume it afterwards with
-`claude --continue` from its own folder.
+Show the tree that was created, then tell the user their agent is already
+running in the background — that `claude attach <id>` opens it in the terminal,
+that it also appears in `claude agents`, and how to start it again if it is ever
+stopped. The script prints all of these.
 
 Point out that the agent's profile (`agents/<name>/CLAUDE.md`) and the agency's
 shared conventions (`CLAUDE.md`) are meant to be edited by hand as the role

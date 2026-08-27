@@ -65,18 +65,30 @@ character, to keep them apart.
 
 ## Running an agent
 
+Agents run as background sessions, so the office is `claude agents`. Opening an
+agency starts its first agent for you and records the session id it was given.
+
+To work with an agent directly:
+
+```
+claude attach <id>        # opens it in this terminal; Ctrl+Z drops back out
+```
+
+or pick it out of `claude agents`. The session keeps running either way.
+
+If an agent has been stopped, start it again from its own folder:
+
 ```
 cd ~/agency/agents/<name>
-claude --continue                  # resumes that agent
+claude --bg --resume <session_id> --name "agency:<name>"
 ```
 
-`--continue` picks up the most recent session in the current directory, and
-each agent has its own directory — so you never type a session id. The
-`session_id` in the roster is the durable address for naming one exact session
-(`claude --resume <id>`) and for finding the agent among live sessions.
+The `cd` is what gives the session the agent's profile, the agency conventions
+it inherits, and its permission scope. Pass `--name` every launch — it is not
+remembered, and without it the agents view retitles the session after its
+contents.
 
-Agents address each other by display name via `SendMessage`; `claude agents
---json` reports who is actually live.
+Agents reach each other with `SendMessage`, by the display name in the roster.
 
 ## Layout
 

@@ -40,18 +40,26 @@ produces something that looks right and is not.
   three-layer split work at all.
 - **`--session-id` must be a UUID.** `claude --session-id agency-ea` fails with
   `Invalid session ID. Must be a valid UUID.` Agent names cannot be session ids.
-- **`--continue` resumes the most recent session in the current directory.**
-  Since every agent has its own directory, this is how an agent is resumed —
-  the user never types an id.
-- **Per-project storage is keyed on the path.** Claude Code derives a directory
-  under `~/.claude/projects/` from the absolute path with every non-alphanumeric
-  character replaced by `-`, and keeps session transcripts and auto-memory
-  there. Sessions record their own `cwd` and are told apart by it; memory is not,
-  so paths that collapse to the same slug share one memory store.
-- **Renaming an agent folder breaks `--continue` and strands its memory**, because
-  the slug changes. `--resume <uuid>` still works. The repair is to move the
-  project directory to the new slug — verified sufficient on its own, with no
-  edit to the transcripts.
+- **Agents run in the background, and only there.** `--bg` makes a session that
+  `claude agents` lists and `claude attach <id>` opens interactively, so the
+  foreground buys nothing and is not a second supported path.
+- **`--bg` assigns its own session id and ignores `--session-id`**, warning
+  `--bg manages the session id`. An id therefore cannot be chosen in advance;
+  it is read back from `claude agents --json` after launch, matched on the
+  agent's directory, and that is what the roster stores.
+- **`--continue` does not work with `--bg`.** It exits with `No conversation
+  found to continue` and the worker crash-loops. Agents are resumed by id.
+- **A background session that is never prompted does not survive.** It writes no
+  transcript, drops out of `claude agents`, and its id cannot be resumed — so
+  the scaffold sends a first prompt rather than leaving the agent idle. One
+  exchange is enough to make the session durable.
+- **`--name` is per launch, not stored with the session.** It sets the title
+  shown in `claude agents`; omit it on a resume and the view retitles the
+  session from its content. Anything that launches an agent must pass it every
+  time.
+- **A foreground `claude` cannot be launched from inside a tool call.** It wants
+  a terminal and a person, so it hangs or returns nothing. Anything an agent is
+  told to run must be `--bg` or `-p`.
 
 ## Scope
 
