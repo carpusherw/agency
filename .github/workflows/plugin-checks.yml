@@ -1,0 +1,102 @@
+name: plugin-checks
+
+on:
+  # No `paths` filter on purpose. If these become required status checks, a
+  # path-filtered workflow simply does not run when nothing matches, and the
+  # required check sits at "Expected — waiting for status" forever, blocking
+  # docs-only pull requests. Both jobs no-op cleanly when no plugin changed.
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  version-bump:
+    name: plugin version bumped when the plugin changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Check version bumps
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          changed=$(
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- 'plugins/' \
+              | awk -F/ 'NF>=2 {print $2}' \
+              | sort -u
+          )
+
+          if [ -z "$changed" ]; then
+            echo "No plugin directories changed."
+            exit 0
+          fi
+
+          read_version() {
+            git show "$1:$2" \
+              | python3 -c 'import json,sys; print(json.load(sys.stdin).get("version",""))'
+          }
+
+          fail=0
+          for dir in $changed; do
+            manifest="plugins/$dir/.claude-plugin/plugin.json"
+
+            if ! git cat-file -e "$HEAD_SHA:$manifest" 2>/dev/null; then
+              echo "skip: $dir (deleted, or has no manifest)"
+              continue
+            fi
+
+            if ! git cat-file -e "$BASE_SHA:$manifest" 2>/dev/null; then
+              echo "pass: $dir (new plugin)"
+              continue
+            fi
+
+            base_version="$(read_version "$BASE_SHA" "$manifest")"
+            head_version="$(read_version "$HEAD_SHA" "$manifest")"
+
+            if [ -z "$head_version" ]; then
+              echo "::error file=$manifest::no version field. Every plugin manifest must declare one."
+              fail=1
+            elif [ -z "$base_version" ]; then
+              echo "pass: $dir (now versioned at $head_version)"
+            elif [ "$base_version" = "$head_version" ]; then
+              echo "::error file=$manifest::version not bumped (still $base_version). Anything under plugins/$dir/ — a skill, a template, a script — is a change to the plugin, so bump it."
+              fail=1
+            else
+              echo "pass: $dir ($base_version -> $head_version)"
+            fi
+          done
+
+          exit $fail
+
+  marketplace-sync:
+    name: marketplace.json regenerates clean
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: '3.12'
+      - name: Regenerate and diff
+        run: |
+          python3 scripts/build_marketplace.py
+          if ! git diff --exit-code -- .claude-plugin/marketplace.json; then
+            echo "::error file=.claude-plugin/marketplace.json::out of sync with the plugin manifests. Run python3 scripts/build_marketplace.py and commit the result."
+            exit 1
+          fi

@@ -72,6 +72,32 @@ migrating an older layout are all absent on purpose. Add them when something
 real needs them, not in anticipation — the same reason there are no hooks,
 budgets, or headcount limits yet.
 
+## Versioning
+
+A plugin's version lives in `plugins/<name>/.claude-plugin/plugin.json`, and
+that manifest is the source of truth for everything the marketplace shows.
+`.claude-plugin/marketplace.json` is **generated** from it — never hand-edit its
+`plugins` array, or the two drift and the marketplace advertises something the
+plugin is not.
+
+**Every change under `plugins/` is a change to the plugin.** A skill's wording,
+a template, a script, a job description: if it ships to a user, it is the
+plugin, and the version moves. Semantic versioning — MAJOR for a breaking
+change, MINOR for a new capability, PATCH for a fix.
+
+So a change to a plugin is three edits, not one:
+
+```
+# 1. make the change under plugins/<name>/
+# 2. bump "version" in plugins/<name>/.claude-plugin/plugin.json
+python3 scripts/build_marketplace.py    # 3. regenerate, and commit the result
+```
+
+Both halves are enforced on every pull request by
+`.github/workflows/plugin-checks.yml`: one job fails if a plugin directory
+changed without its version moving, the other fails if `marketplace.json` does
+not regenerate byte-identical to what is committed.
+
 ## Verifying a change
 
 Running `agency-init.sh` on a clean path proves very little; the bugs live in
