@@ -1,0 +1,16 @@
+{
+  "name": "agency",
+  "description": "Run an office of long-lived agents. Each agent gets its own folder, profile, permission scope, durable state, and a fixed session id so it is resumed rather than restarted.",
+  "category": "workflow",
+  "author": {
+    "name": "carpusherw"
+  },
+  "keywords": [
+    "agency",
+    "agents",
+    "orchestration",
+    "memory",
+    "sessions",
+    "roster"
+  ]
+}

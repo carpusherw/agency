@@ -1,0 +1,28 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agency",
+  "version": "0.1.0",
+  "description": "Claude Code marketplace for agency, self-hosted from its own repo.",
+  "owner": {
+    "name": "carpusherw"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "agency",
+      "description": "Run an office of long-lived agents. Each agent gets its own folder, profile, permission scope, durable state, and a fixed session id so it is resumed rather than restarted.",
+      "source": "./plugins/agency",
+      "category": "workflow",
+      "tags": [
+        "agency",
+        "agents",
+        "orchestration",
+        "memory",
+        "sessions",
+        "roster"
+      ]
+    }
+  ]
+}
