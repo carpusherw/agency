@@ -54,10 +54,12 @@ length. This becomes the agent's profile and shapes everything it does.
 If the role drifts away from an executive assistant, set a title to match.
 Otherwise the title is `Executive Assistant`.
 
-Do not ask about permissions or conventions. Agents are created in `auto`
-permission mode via their own `.claude/settings.json`, and shared conventions
-come from the agency's `CLAUDE.md`. Both are files the user can edit
-afterwards.
+Do not ask about permissions or conventions. This first agent is an executive
+assistant — it routes and acts on the person's behalf, so `auto` permission
+mode fits it, set in its own `.claude/settings.json`. That is this seat's
+default, not the agency's rule: a later agent can be scoped differently in its
+own settings file. Shared conventions come from the agency's `CLAUDE.md`. Both
+are files the user can edit afterwards.
 
 ## Open it
 

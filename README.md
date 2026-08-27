@@ -5,8 +5,9 @@ agency is a directory, and the agents are ordinary Claude Code sessions.
 
 An **agency** is a directory of agents. Each agent has its own folder, its own
 profile (`CLAUDE.md`), its own permission scope (`.claude/settings.json`), a
-state file it maintains, and a fixed session id so it can be resumed instead of
-restarted.
+state file it maintains, its own project memory and session history — Claude
+Code keys those to the folder — and a fixed session id so it can be resumed
+instead of restarted.
 
 The design premise: **persistent identity, disposable sessions.** A session can
 die at any time — crash, restart, compaction. So continuity lives in files, and
