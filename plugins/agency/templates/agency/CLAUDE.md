@@ -42,13 +42,16 @@ agents. Match the two by session id.
   background, so it keeps its profile and permissions:
 
   ```
-  cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "agency:<name>"
+  cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "<display_name>"
   ```
 
-  Quote the name and the path: an agent may be called anything a directory can
-  hold, spaces included, and unquoted they split into separate arguments. Pass
-  `--name` every time — without it the agents view retitles the session after
-  its contents and the office stops being recognisable.
+  Take `session_id` and `display_name` from that agent's entry in
+  `roster.yaml`, verbatim — the display name carries the agency's emoji and
+  name, so composing it by hand gets it wrong. Quote both it and the path: an
+  agent may be called anything a directory can hold, spaces included, and
+  unquoted they split into separate arguments. Pass `--name` every time —
+  without it the agents view retitles the session after its contents and the
+  office stops being recognisable.
 
 Never start an agent with a bare `claude` or `claude --continue`. Those open an
 interactive session and expect a person at a terminal; from inside a tool call

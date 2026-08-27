@@ -22,11 +22,30 @@ separate jobs.
 
 ## Interview
 
-### 1. Where should the agency live?
+### 1. What is the agency called?
+
+Suggest a name rather than asking cold. Base it on what this person actually
+works on — infer it from the conversation, from the repositories around them,
+or by asking what the agency is for. An office has a name, not a job
+description, so something with a little character beats something literal.
+
+Offer an emoji with it, and show the two together exactly as they will appear
+in `claude agents`:
+
+```
+🏢 [MIB]: Agent O
+```
+
+The emoji must be a single one, with no zero-width joiner. A combined emoji
+like 🧑‍💼 — person, joiner, briefcase — is split apart in a session name and
+arrives as `🧑 💼`. The script rejects those, so suggest one glyph: 🏢 💼 🎩 🛰
+🗂 🧭 ✨ all survive intact.
+
+### 2. Where should the agency live?
 
 Default `~/agency`.
 
-### 2. What should this agent be called?
+### 3. What should this agent be called?
 
 Invent a name and offer it, rather than asking the user to produce one cold —
 something short and pronounceable that reads as an identity. Any name a
@@ -34,7 +53,7 @@ directory can carry works, in any language; it does not have to be English or
 lowercase. The name is an identity, not a job title — the title is a separate
 field, so it does not need to describe the work.
 
-### 3. What is this agent for?
+### 4. What is this agent for?
 
 Start from the default executive-assistant job description:
 
@@ -67,7 +86,8 @@ Write the accepted job description to a file, then run:
 
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/agency-init.sh \
-  --root <root> --name <name> --jd-file <path> [--title <title>]
+  --root <root> --agency <agency name> --name <name> --jd-file <path> \
+  [--emoji <emoji>] [--title <title>]
 ```
 
 It creates the tree, starts the agent as a background session, reads back the
