@@ -3,11 +3,12 @@
 This directory is an agency: a set of long-lived agents, each with its own
 folder, profile, and durable state.
 
-Sessions are disposable. Identity and memory live in files.
+A session is replaceable, not the agent. Identity and memory live in files.
 
 ## Layout
 
-- `roster.yaml` — who exists, where their folder is, their fixed session id.
+- `roster.yaml` — who exists, where their folder is, the session each is
+  running now.
 - `agents/<name>/CLAUDE.md` — that agent's profile.
 - `agents/<name>/STATE.md` — what that agent is currently holding.
 - `agents/<name>/journal/<YYYY-MM>.md` — append-only notes.
@@ -32,26 +33,17 @@ agent, its folder, and its session id.
 
 ## Reaching another agent
 
-Everyone here runs as a background session, so `claude agents --json` is the
-live view of the office and `roster.yaml` says which of those sessions are
-agents. Match the two by session id.
+Everyone here runs as a background session. `claude agents --json` is the live
+view of the office; `roster.yaml` says which of those sessions are agents, and
+which session each is running now.
 
-- **If it is listed, message it.** `SendMessage` reaches any live session,
-  including one sitting idle waiting for a prompt. Idle is not stopped.
-- **If it is not listed, start it again** from its own folder, in the
-  background, so it keeps its profile and permissions:
+**If the agent has a live session, message it.** `SendMessage` reaches any live
+session, including one sitting idle waiting for a prompt — idle is not stopped.
 
-  ```
-  cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "<display_name>"
-  ```
-
-  Take `session_id` and `display_name` from that agent's entry in
-  `roster.yaml`, verbatim — the display name carries the agency's emoji and
-  name, so composing it by hand gets it wrong. Quote both it and the path: an
-  agent may be called anything a directory can hold, spaces included, and
-  unquoted they split into separate arguments. Pass `--name` every time —
-  without it the agents view retitles the session after its contents and the
-  office stops being recognisable.
+**If it has none, tell the agent that owns the roster.** Starting a colleague
+back up is that agent's job rather than yours: a restart changes which session
+the roster records, and the roster has one writer. Say who is absent and leave
+it with them.
 
 Never start an agent with a bare `claude` or `claude --continue`. Those open an
 interactive session and expect a person at a terminal; from inside a tool call

@@ -1,7 +1,7 @@
 {
   "name": "agency",
-  "description": "Run an office of long-lived agents. Each agent gets its own folder, profile, permission scope, durable state, and a fixed session id so it is resumed rather than restarted.",
-  "version": "0.1.2",
+  "description": "Run an office of long-lived agents. Each agent gets its own folder, profile, permission scope, and durable state, so its session can be replaced without losing the agent.",
+  "version": "0.2.0",
   "category": "workflow",
   "author": {
     "name": "carpusherw"
