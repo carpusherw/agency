@@ -49,6 +49,19 @@ with you on that agent's job description until you accept it. Then it creates:
     .claude/settings.json      its permission scope
 ```
 
+### Naming
+
+Agent names accept anything a directory can carry, in any language — `行政 助理`
+is a valid name.
+
+One caveat if you use non-ASCII names. Claude Code derives a per-project
+storage directory from the agent's path, replacing every non-alphanumeric
+character with `-`, so two agents whose names are the same length and entirely
+non-ASCII resolve to the same directory. Their conversations stay separate —
+each session records its own working directory — but they share one auto-memory
+store. Give such agents names of different lengths, or include one ASCII
+character, to keep them apart.
+
 ## Running an agent
 
 ```
