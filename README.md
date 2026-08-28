@@ -13,17 +13,11 @@ session may run for months, but it is never the agent: it can end at any time,
 and a new one started in the same folder comes back whole. Continuity lives in
 files.
 
-## Repo vs agency
+This repo is the mechanism, a shareable plugin of skills, templates and scripts.
+Your agency is instance state and lives elsewhere — `~/agency` by default. It is
+never checked in here, and what you do with it afterwards is yours to decide.
 
-This repo is the **mechanism** — a Claude Code plugin holding skills, templates,
-and scripts. It is shareable.
-
-Your **agency** is instance state and lives elsewhere (default `~/agency`):
-the roster, the agents, their memory. It is never checked in here, and what you
-do with it afterwards — version it, back it up, leave it alone — is yours to
-decide.
-
-## Install
+## Quick start
 
 ```
 claude plugin marketplace add carpusherw/agency
@@ -37,9 +31,10 @@ Then, in Claude Code:
 ```
 
 It names the agency and picks its **logoji** — one emoji that marks every
-session the agency runs — asks where it lives, offers a
-name for the first agent, and works with you on that agent's job description
-until you accept it. Then it creates:
+session the agency runs — asks where it lives, offers a name for the first agent
+(anything a directory can carry, in any language — see [Naming](#naming)), and
+works with you on that agent's job description until you accept it. Then it
+creates:
 
 ```
 ~/agency/
@@ -52,49 +47,14 @@ until you accept it. Then it creates:
     .claude/settings.json      its permission scope
 ```
 
-### Naming
-
-Agent names accept anything a directory can carry, in any language — `行政 助理`
-is a valid name.
-
-One caveat if you use non-ASCII names. Claude Code derives a per-project
-storage directory from the agent's path, replacing every non-alphanumeric
-character with `-`, so two agents whose names are the same length and entirely
-non-ASCII resolve to the same directory. Their conversations stay separate —
-each session records its own working directory — but they share one auto-memory
-store. Give such agents names of different lengths, or include one ASCII
-character, to keep them apart.
-
-## Running an agent
-
-Agents run as background sessions, so the office is `claude agents`. Opening an
-agency starts its first agent for you and records the session id it was given.
-
-To work with an agent directly:
+**Your agent is already running when that finishes.** Agents are background
+sessions, so the office is `claude agents`, and you open one with:
 
 ```
 claude attach <id>        # opens it in this terminal; Ctrl+Z drops back out
 ```
 
-or pick it out of `claude agents`. The session keeps running either way.
-
-If an agent has been stopped, start it again from its own folder:
-
-```
-cd ~/agency/agents/<agent.name>
-claude --bg --resume <session_id> --name "<agency.logoji> [<agency.name>]: <agent.name>"
-```
-
-`session_id` comes from that agent's roster entry; the name is composed from the
-roster's `agency.logoji` and `agency.name` plus the agent's own — `🏢 [MIB]: Agent
-O` — so every session in `claude agents` reads as part of the same office.
-
-The `cd` is what gives the session the agent's profile, the agency conventions
-it inherits, and its permission scope. Pass `--name` every launch — it is not
-remembered, and without it the agents view retitles the session after its
-contents.
-
-Agents reach each other with `SendMessage`, by that composed name.
+The session keeps running either way.
 
 ## Hiring another agent
 
@@ -115,17 +75,39 @@ conversation. So a long-running session becomes a seat without losing anything,
 and the interview only has to work out its job description. The session has to
 be stopped to be moved, which the skill asks you about first.
 
-## Layout
+Once there is more than one, agents reach each other with `SendMessage`, by the
+name their sessions carry in `claude agents`.
+
+## When an agent stops
+
+Sessions end, and that is the premise rather than a failure: the agent is its
+folder, so it comes back whole, and `STATE.md` and its journal carry whatever it
+was holding.
+
+Telling your executive assistant is enough — the roster is theirs, and starting a
+colleague back up is their job. To do it yourself, launch it from its own folder,
+which is what gives the session its profile, the agency conventions it inherits,
+and its permission scope:
 
 ```
-.claude-plugin/marketplace.json
-plugins/agency/
-  .claude-plugin/plugin.json
-  skills/open/SKILL.md         the interview
-  skills/hire/SKILL.md         the interview for a second seat
-  scripts/agency-init.sh       the deterministic scaffold
-  scripts/agency-hire.sh       the same, for hiring into an open agency
-  templates/agency/            shared CLAUDE.md, roster.yaml
-  templates/agent/             profile, STATE.md, settings.json
-  templates/jd/ea.md           default executive-assistant job description
+cd <agency root>/agents/<agent.name>
+claude --bg --resume <session_id> --name "<agency.logoji> [<agency.name>]: <agent.name>"
 ```
+
+The root is the one thing you supply — where you opened the agency, `~/agency`
+unless you chose otherwise. Every other placeholder is a roster field:
+`session_id` from that agent's own entry, the rest from `agency` and the agent's
+`name`. Pass `--name` on every launch; it is not remembered.
+
+## Naming
+
+Agent names accept anything a directory can carry, in any language — `行政 助理`
+is a valid name.
+
+One caveat if you use non-ASCII names. Claude Code derives a per-project
+storage directory from the agent's path, replacing every non-alphanumeric
+character with `-`, so two agents whose names are the same length and entirely
+non-ASCII resolve to the same directory. Their conversations stay separate —
+each session records its own working directory — but they share one auto-memory
+store. Give such agents names of different lengths, or include one ASCII
+character, to keep them apart.

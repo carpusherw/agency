@@ -13,6 +13,21 @@ Note the name collision when reading paths: `CLAUDE.md` at this repo root is
 *this* file, for working on the plugin. `templates/agency/CLAUDE.md` is the one
 that ends up in a user's agency.
 
+## Layout
+
+```
+.claude-plugin/marketplace.json
+plugins/agency/
+  .claude-plugin/plugin.json
+  skills/open/SKILL.md         the interview
+  skills/hire/SKILL.md         the interview for a second seat
+  scripts/agency-init.sh       the deterministic scaffold
+  scripts/agency-hire.sh       the same, for hiring into an open agency
+  templates/agency/            shared CLAUDE.md, roster.yaml
+  templates/agent/             profile, STATE.md, settings.json
+  templates/jd/ea.md           default executive-assistant job description
+```
+
 ## Where a rule belongs
 
 An agency has three layers of instruction, and every layer is loaded from a
