@@ -1,7 +1,7 @@
 # Instance state. Belongs to this machine, not to the agency repo.
 agency:
   name: {{AGENCY_NAME_YAML}}
-  emoji: {{EMOJI_YAML}}
+  logoji: {{LOGOJI_YAML}}
   root: {{AGENCY_ROOT_YAML}}
   opened: {{DATE}}
 

@@ -46,7 +46,7 @@ Start it from its own folder, in the background, so it keeps its profile and its
 permissions:
 
 ```
-cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "<emoji> [<agency>]: <name>"
+cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "<logoji> [<agency>]: <name>"
 ```
 
 `--resume` picks up the conversation the roster last recorded. A recorded id
@@ -58,7 +58,7 @@ Take `session_id` from that agent's own roster entry, and build the name from
 the roster too:
 
 ```
-<agency.emoji> [<agency.name>]: <agent.name>
+<agency.logoji> [<agency.name>]: <agent.name>
 ```
 
 Quote it and the path; an agent may be called anything a directory can hold,
