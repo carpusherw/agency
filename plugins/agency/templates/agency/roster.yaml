@@ -10,5 +10,4 @@ agents:
     title: {{TITLE_YAML}}
     folder: {{AGENT_FOLDER_YAML}}
     session_id: {{SESSION_ID_YAML}}
-    display_name: {{DISPLAY_NAME_YAML}}
     status: active

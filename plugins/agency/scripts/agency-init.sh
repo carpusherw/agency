@@ -96,13 +96,14 @@ export TITLE
 export JD="$(cat "$JD_FILE")"
 export AGENCY_NAME="$AGENCY"
 export EMOJI
+# Composed, never stored: the roster keeps emoji, agency and agent name
+# separately, so changing one cannot leave a stale copy behind.
 export DISPLAY_NAME="$EMOJI [$AGENCY]: $NAME"
 export DATE="$(date +%Y-%m-%d)"
 export AGENCY_ROOT_YAML="$(yaml_quote "$ROOT")"
 export AGENT_NAME_YAML="$(yaml_quote "$NAME")"
 export AGENT_FOLDER_YAML="$(yaml_quote "$AGENT_FOLDER")"
 export TITLE_YAML="$(yaml_quote "$TITLE")"
-export DISPLAY_NAME_YAML="$(yaml_quote "$DISPLAY_NAME")"
 export AGENCY_NAME_YAML="$(yaml_quote "$AGENCY")"
 export EMOJI_YAML="$(yaml_quote "$EMOJI")"
 MONTH="$(date +%Y-%m)"

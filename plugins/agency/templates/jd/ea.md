@@ -46,7 +46,7 @@ Start it from its own folder, in the background, so it keeps its profile and its
 permissions:
 
 ```
-cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "<display_name>"
+cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "<emoji> [<agency>]: <name>"
 ```
 
 `--resume` picks up the conversation the roster last recorded. A recorded id
@@ -54,10 +54,16 @@ stops resuming once that session has ended, so if `--resume` fails, drop it and
 start fresh: the agent is its folder, it comes back whole, and `STATE.md` carried
 anything worth keeping.
 
-Take `session_id` and `display_name` from that agent's own entry in the roster,
-verbatim. Quote the name and the path — an agent may be called anything a
-directory can hold, spaces included. Pass `--name` on every launch, or the agents
-view retitles the session after its contents.
+Take `session_id` from that agent's own roster entry, and build the name from
+the roster too:
+
+```
+<agency.emoji> [<agency.name>]: <agent.name>
+```
+
+Quote it and the path; an agent may be called anything a directory can hold,
+spaces included. Pass `--name` on every launch, or the agents view retitles the
+session after its contents.
 
 Then write the new session id into the roster. **A session id there is what an
 agent was running, not a permanent address** — sessions end for all sorts of

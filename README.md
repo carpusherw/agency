@@ -43,7 +43,7 @@ until you accept it. Then it creates:
 ```
 ~/agency/
   CLAUDE.md                    inherited by every agent
-  roster.yaml                  the agency's display name, and who exists
+  roster.yaml                  the agency's name and emoji, and who exists
   agents/<name>/
     CLAUDE.md                  the agent's profile, from the job description
     STATE.md                   what it is currently holding
@@ -81,19 +81,19 @@ If an agent has been stopped, start it again from its own folder:
 
 ```
 cd ~/agency/agents/<name>
-claude --bg --resume <session_id> --name "<display_name>"
+claude --bg --resume <session_id> --name "<emoji> [<agency>]: <name>"
 ```
 
-Both values come from that agent's entry in `roster.yaml`. The display name puts
-the agency's in front of the agent's own — `🏢 [MIB]: Agent O` — so every session
-in `claude agents` reads as part of the same office.
+`session_id` comes from that agent's roster entry; the name is composed from the
+roster's `agency.emoji` and `agency.name` plus the agent's own — `🏢 [MIB]: Agent
+O` — so every session in `claude agents` reads as part of the same office.
 
 The `cd` is what gives the session the agent's profile, the agency conventions
 it inherits, and its permission scope. Pass `--name` every launch — it is not
 remembered, and without it the agents view retitles the session after its
 contents.
 
-Agents reach each other with `SendMessage`, by the display name in the roster.
+Agents reach each other with `SendMessage`, by that composed name.
 
 ## Layout
 
