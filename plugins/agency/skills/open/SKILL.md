@@ -8,10 +8,9 @@ description: Open a new agency — an office of long-lived agents, each with its
 Opens an agency and hires its first agent.
 
 An agency is a directory of long-lived agents. Each agent gets a folder, a
-profile (`CLAUDE.md`), its own permission scope (`.claude/settings.json`), a
-state file it maintains across sessions, and a fixed session id so it can be
-resumed rather than restarted. Sessions are disposable; identity and memory
-live in files.
+profile (`CLAUDE.md`), its own permission scope (`.claude/settings.json`), and a
+state file it maintains across sessions. Identity and memory live in files, so
+its session can be replaced without losing the agent.
 
 ## Gate
 
