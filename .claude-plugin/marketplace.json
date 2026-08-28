@@ -14,7 +14,7 @@
       "name": "agency",
       "description": "Run an office of long-lived agents. Each agent gets its own folder, profile, permission scope, and durable state, so its session can be replaced without losing the agent.",
       "source": "./plugins/agency",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "category": "workflow",
       "tags": [
         "agency",

@@ -89,8 +89,8 @@ produces something that looks right and is not.
 
 ## Scope
 
-v1 opens an agency and hires one agent. Hiring more, archiving, renaming, and
-migrating an older layout are all absent on purpose. Add them when something
+Opening an agency and hiring into it are covered. Archiving, renaming, and
+migrating an older layout are absent on purpose. Add them when something
 real needs them, not in anticipation — the same reason there are no hooks,
 budgets, or headcount limits yet.
 
