@@ -81,8 +81,8 @@ or pick it out of `claude agents`. The session keeps running either way.
 If an agent has been stopped, start it again from its own folder:
 
 ```
-cd ~/agency/agents/<name>
-claude --bg --resume <session_id> --name "<logoji> [<agency>]: <name>"
+cd ~/agency/agents/<agent.name>
+claude --bg --resume <session_id> --name "<agency.logoji> [<agency.name>]: <agent.name>"
 ```
 
 `session_id` comes from that agent's roster entry; the name is composed from the
