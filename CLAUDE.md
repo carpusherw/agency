@@ -69,11 +69,28 @@ produces something that looks right and is not.
 - **A foreground `claude` cannot be launched from inside a tool call.** It wants
   a terminal and a person, so it hangs or returns nothing. Anything an agent is
   told to run must be `--bg` or `-p`.
+  Inferred rather than observed — the only line here that is.
+- **A stopped session resumed from another directory adopts it.** It takes that
+  directory as its working directory and loads the `CLAUDE.md` there *and* in
+  every parent, while keeping its whole conversation. This is what lets a
+  long-running session be hired into a seat instead of rebuilt.
+- **A session running as a background agent cannot be resumed elsewhere.** The
+  attempt is refused, naming two ways out: stop it, or `--fork-session` to
+  branch a copy. Relocating a live session means stopping it first.
+- **`--bg --resume <id>` mints a new session id** and keeps the conversation, so
+  a resumed agent is recorded under its new id like any other launch.
+- **An untrusted workspace ignores `permissions.allow` entries**, warning that it
+  did. A freshly scaffolded agent folder is untrusted, so a seat scoped by an
+  allow or deny list needs `projects[<dir>].hasTrustDialogAccepted` in
+  `~/.claude.json`. `defaultMode` applies either way. Whether `deny` survives
+  an untrusted workspace is untested.
+- **`auto` permission mode is unavailable on Haiku 4.5.** The session falls back
+  to manual mode, so a seat written as `auto` is not `auto` on a small model.
 
 ## Scope
 
-v1 opens an agency and hires one agent. Hiring more, archiving, renaming, and
-migrating an older layout are all absent on purpose. Add them when something
+Opening an agency and hiring into it are covered. Archiving, renaming, and
+migrating an older layout are absent on purpose. Add them when something
 real needs them, not in anticipation — the same reason there are no hooks,
 budgets, or headcount limits yet.
 

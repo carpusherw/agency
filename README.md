@@ -96,6 +96,25 @@ contents.
 
 Agents reach each other with `SendMessage`, by that composed name.
 
+## Hiring another agent
+
+```
+/agency:hire
+```
+
+Adds a seat to an agency that is already open. It works out the job
+description with you, suggests names that fit the agency's theme — the roster
+carries it, so `Round Table` plus an agent called Merlin means knights —
+asks what the seat may do without asking, then creates it, starts it, and
+appends it to the roster.
+
+An agent can also be hired **from a session you are already running**. A stopped
+session resumed from an agent folder adopts that folder — its profile, the
+agency conventions above it, its permission scope — while keeping its entire
+conversation. So a long-running session becomes a seat without losing anything,
+and the interview only has to work out its job description. The session has to
+be stopped to be moved, which the skill asks you about first.
+
 ## Layout
 
 ```
@@ -103,7 +122,9 @@ Agents reach each other with `SendMessage`, by that composed name.
 plugins/agency/
   .claude-plugin/plugin.json
   skills/open/SKILL.md         the interview
+  skills/hire/SKILL.md         the interview for a second seat
   scripts/agency-init.sh       the deterministic scaffold
+  scripts/agency-hire.sh       the same, for hiring into an open agency
   templates/agency/            shared CLAUDE.md, roster.yaml
   templates/agent/             profile, STATE.md, settings.json
   templates/jd/ea.md           default executive-assistant job description

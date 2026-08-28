@@ -97,6 +97,9 @@ export TITLE
 export JD="$(cat "$JD_FILE")"
 export AGENCY_NAME="$AGENCY"
 export LOGOJI
+# This first seat is an executive assistant: it routes and acts on the user's
+# behalf, so it gets auto. A later seat is scoped in its own settings file.
+export PERMISSION_MODE="auto"
 # Composed, never stored: the roster keeps logoji, agency and agent name
 # separately, so changing one cannot leave a stale copy behind.
 export DISPLAY_NAME="$LOGOJI [$AGENCY]: $NAME"
@@ -120,7 +123,7 @@ mkdir -p "$AGENT_DIR/journal" "$AGENT_DIR/.claude"
 render "$PLUGIN/templates/agency/CLAUDE.md"    "$ROOT/CLAUDE.md"
 render "$PLUGIN/templates/agent/CLAUDE.md"     "$AGENT_DIR/CLAUDE.md"
 render "$PLUGIN/templates/agent/STATE.md"      "$AGENT_DIR/STATE.md"
-cp     "$PLUGIN/templates/agent/settings.json" "$AGENT_DIR/.claude/settings.json"
+render "$PLUGIN/templates/agent/settings.json" "$AGENT_DIR/.claude/settings.json"
 : > "$AGENT_DIR/journal/$MONTH.md"
 
 # Quote for copy-paste: a path or name with spaces still yields a usable command.
