@@ -55,7 +55,7 @@ produces something that looks right and is not.
   exchange is enough to make the session durable.
 - **A session name loses a zero-width joiner.** U+200D is replaced with a
   space, so a combined emoji such as 🧑‍💼 arrives as `🧑 💼`. Everything else
-  survives byte-exact, variation selectors included, so agency emoji are
+  survives byte-exact, variation selectors included, so an agency's logoji is
   restricted to a single glyph and the script rejects the rest.
 - **An `AskUserQuestion` option carrying a `preview` costs the question its
   `Type something.` row.** The preview switches the prompt to a side-by-side

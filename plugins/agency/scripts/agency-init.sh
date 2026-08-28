@@ -13,21 +13,21 @@ die() { printf 'agency-init: %s\n' "$1" >&2; exit 1; }
 usage() {
   cat >&2 <<'USAGE'
 usage: agency-init.sh --root <path> --agency <agency name> --name <agent name>
-                      --jd-file <path> [--emoji <emoji>] [--title <agent title>]
+                      --jd-file <path> [--logoji <logoji>] [--title <agent title>]
 
   --root     where the agency lives (e.g. ~/agency). Must be empty or absent.
   --agency   what the agency is called, e.g. MIB. Appears in every session name.
   --name     what this agent is called. Anything a directory can be called, in
              any language.
   --jd-file  file holding the agent's job description (becomes its profile)
-  --emoji    one emoji for the agency: no whitespace, no zero-width joiner.
-             Default: 🏢
+  --logoji   the agency's mark: one emoji, no whitespace, no zero-width
+             joiner. Default: 🏢
   --title    this agent's title for the roster. Default: Executive Assistant
 USAGE
   exit 2
 }
 
-ROOT="" NAME="" JD_FILE="" TITLE="Executive Assistant" AGENCY="" EMOJI="🏢"
+ROOT="" NAME="" JD_FILE="" TITLE="Executive Assistant" AGENCY="" LOGOJI="🏢"
 while [ $# -gt 0 ]; do
   case "$1" in
     --root)    ROOT="${2-}"; shift 2 ;;
@@ -35,7 +35,7 @@ while [ $# -gt 0 ]; do
     --jd-file) JD_FILE="${2-}"; shift 2 ;;
     --title)   TITLE="${2-}"; shift 2 ;;
     --agency)  AGENCY="${2-}"; shift 2 ;;
-    --emoji)   EMOJI="${2-}"; shift 2 ;;
+    --logoji)  LOGOJI="${2-}"; shift 2 ;;
     -h|--help) usage ;;
     *) die "unknown argument: $1" ;;
   esac
@@ -58,15 +58,16 @@ case "$AGENCY" in
   *$'\n'*|*$'\t'*) die "agency name cannot contain newlines or tabs" ;;
 esac
 
-# One emoji, and it has to survive a session name. A zero-width joiner there is
+# The logoji is one emoji, and it has to survive a session name. A zero-width
+# joiner there is
 # replaced with a space, so a combined emoji like the office worker (person +
 # ZWJ + briefcase) arrives as two. Whitespace is rejected rather than a
 # codepoint count, because a legitimate emoji may carry a variation selector —
 # 🗂️ is U+1F5C2 U+FE0F — and those survive intact.
-[ -n "$EMOJI" ] || die "emoji cannot be empty"
-case "$EMOJI" in
-  *$'\u200d'*) die "emoji cannot contain a zero-width joiner: a combined emoji is split apart in session names. Use a single one." ;;
-  *[[:space:]]*) die "emoji cannot contain whitespace: pass a single emoji, not several" ;;
+[ -n "$LOGOJI" ] || die "logoji cannot be empty"
+case "$LOGOJI" in
+  *$'\u200d'*) die "logoji cannot contain a zero-width joiner: a combined emoji is split apart in session names. Use a single one." ;;
+  *[[:space:]]*) die "logoji cannot contain whitespace: pass a single emoji, not several" ;;
 esac
 
 # Expand a leading ~ without eval.
@@ -95,16 +96,17 @@ export AGENT_FOLDER
 export TITLE
 export JD="$(cat "$JD_FILE")"
 export AGENCY_NAME="$AGENCY"
-export EMOJI
-export DISPLAY_NAME="$EMOJI [$AGENCY]: $NAME"
+export LOGOJI
+# Composed, never stored: the roster keeps logoji, agency and agent name
+# separately, so changing one cannot leave a stale copy behind.
+export DISPLAY_NAME="$LOGOJI [$AGENCY]: $NAME"
 export DATE="$(date +%Y-%m-%d)"
 export AGENCY_ROOT_YAML="$(yaml_quote "$ROOT")"
 export AGENT_NAME_YAML="$(yaml_quote "$NAME")"
 export AGENT_FOLDER_YAML="$(yaml_quote "$AGENT_FOLDER")"
 export TITLE_YAML="$(yaml_quote "$TITLE")"
-export DISPLAY_NAME_YAML="$(yaml_quote "$DISPLAY_NAME")"
 export AGENCY_NAME_YAML="$(yaml_quote "$AGENCY")"
-export EMOJI_YAML="$(yaml_quote "$EMOJI")"
+export LOGOJI_YAML="$(yaml_quote "$LOGOJI")"
 MONTH="$(date +%Y-%m)"
 
 # Substitute {{PLACEHOLDER}} from the environment. perl (not sed) so that
@@ -163,7 +165,7 @@ fi
 render "$PLUGIN/templates/agency/roster.yaml" "$ROOT/roster.yaml"
 
 cat <<REPORT
-$EMOJI $AGENCY opened at $ROOT
+$LOGOJI $AGENCY opened at $ROOT
 
   agent        $NAME
   title        $TITLE

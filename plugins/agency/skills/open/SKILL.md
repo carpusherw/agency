@@ -26,13 +26,14 @@ separate jobs.
 Suggest a few, drawn from what this person actually works on — the
 conversation, the repositories around them, or by asking what the agency is
 for. An office has a name, not a job description, so something with a little
-character beats something literal. Put each one's emoji in the option itself, so
+character beats something literal. Give each suggestion a **logoji** — the one
+emoji that will mark every session — and put it in the option itself, so
 a choice reads as `🧭 Waypoint`.
 
 The suggestions are a starting point — whatever they answer is the name. If they
-name it themselves, suggest an emoji afterwards.
+name it themselves, suggest a logoji afterwards.
 
-The emoji must be a single one, with no zero-width joiner. A combined emoji
+A logoji is a single emoji, with no zero-width joiner. A combined emoji
 like 🧑‍💼 — person, joiner, briefcase — is split apart in a session name and
 arrives as `🧑 💼`. The script rejects those, so suggest one glyph: 🏢 💼 🎩 🛰
 🗂 🧭 ✨ all survive intact.
@@ -82,7 +83,7 @@ Write the accepted job description to a file, then run:
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/agency-init.sh \
   --root <root> --agency <agency name> --name <name> --jd-file <path> \
-  [--emoji <emoji>] [--title <title>]
+  [--logoji <logoji>] [--title <title>]
 ```
 
 It creates the tree, starts the agent as a background session, reads back the

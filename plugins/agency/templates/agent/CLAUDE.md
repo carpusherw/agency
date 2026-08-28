@@ -12,7 +12,7 @@
 ## Your identity
 
 - Folder: `{{AGENT_FOLDER}}`
-- Name in `claude agents`: `{{DISPLAY_NAME}}`
+- Name in `claude agents`: the agency's logoji and name, then yours
 
 Your session id lives in the agency's `roster.yaml`, not here — it is assigned
 when you are started, which is after this file is written.

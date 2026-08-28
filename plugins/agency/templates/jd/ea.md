@@ -46,18 +46,20 @@ Start it from its own folder, in the background, so it keeps its profile and its
 permissions:
 
 ```
-cd "<agency>/agents/<name>" && claude --bg --resume <session_id> --name "<display_name>"
+cd "<agency root>/agents/<agent.name>" && claude --bg --resume <session_id> --name "<agency.logoji> [<agency.name>]: <agent.name>"
 ```
+
+Every placeholder but the root is a roster field — `session_id` from that
+agent's own entry, the rest from `agency` and the agent's `name`.
 
 `--resume` picks up the conversation the roster last recorded. A recorded id
 stops resuming once that session has ended, so if `--resume` fails, drop it and
 start fresh: the agent is its folder, it comes back whole, and `STATE.md` carried
 anything worth keeping.
 
-Take `session_id` and `display_name` from that agent's own entry in the roster,
-verbatim. Quote the name and the path — an agent may be called anything a
-directory can hold, spaces included. Pass `--name` on every launch, or the agents
-view retitles the session after its contents.
+Quote the name and the path; an agent may be called anything a directory can
+hold, spaces included. Pass `--name` on every launch, or the agents view retitles
+the session after its contents.
 
 Then write the new session id into the roster. **A session id there is what an
 agent was running, not a permanent address** — sessions end for all sorts of
