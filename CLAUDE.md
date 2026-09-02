@@ -21,8 +21,10 @@ plugins/agency/
   .claude-plugin/plugin.json
   skills/open/SKILL.md         the interview
   skills/hire/SKILL.md         the interview for a second seat
+  skills/audit/SKILL.md        the comparison against an agency already open
   scripts/agency-init.sh       the deterministic scaffold
   scripts/agency-hire.sh       the same, for hiring into an open agency
+  scripts/agency-audit.sh      root, roster, base revision, and applying a patch
   templates/agency/            shared CLAUDE.md, roster.yaml
   templates/agent/             profile, STATE.md, settings.json
   templates/jd/ea.md           default executive-assistant job description
@@ -104,10 +106,11 @@ produces something that looks right and is not.
 
 ## Scope
 
-Opening an agency and hiring into it are covered. Archiving, renaming, and
-migrating an older layout are absent on purpose. Add them when something
-real needs them, not in anticipation — the same reason there are no hooks,
-budgets, or headcount limits yet.
+Opening an agency, hiring into it, and auditing one against the templates it
+was rendered from are covered. Archiving, renaming, and migrating an older
+layout are absent on purpose. Add them when something real needs them, not in
+anticipation — the same reason there are no hooks, budgets, or headcount limits
+yet.
 
 ## Versioning
 
