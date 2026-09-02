@@ -13,6 +13,14 @@ A session is replaceable, not the agent. Identity and memory live in files.
 - `agents/<name>/STATE.md` — what that agent is currently holding.
 - `agents/<name>/journal/<YYYY-MM>.md` — append-only notes.
 
+## Doing the work
+
+**Put long work to a background agent.** A seat is long-lived, and its
+accumulated context is what makes it worth having; work that would fill it with
+detail someone else could summarise belongs to a disposable agent that reports
+back. Then check what it actually did rather than that it stopped — an idle
+notification is not a completion report.
+
 ## Working with the other agents here
 
 House rules for dealing with each other. `roster.yaml` is the directory: every
