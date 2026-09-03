@@ -114,8 +114,8 @@ The audit compares your agency against the templates the installed plugin
 carries now — the shared conventions, each agent's profile frame, the first
 seat's job description, the shape of the roster — and says what each difference
 means for the agents living under it. It reads the plugin's own git history to
-tell a template that moved from a file you edited yourself, and says so plainly
-when it cannot tell.
+work out whether the template moved or you edited your copy, and says so
+plainly when it cannot tell.
 
 Nothing is written until you have seen it and said yes, and whatever it
 replaces is backed up first. Your own edits are yours: a file it cannot trace

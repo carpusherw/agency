@@ -73,7 +73,7 @@ rendered — which is in the plugin's own git history:
 
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/agency-audit.sh base \
-  --file <the live content> --template <path under the plugin>
+  --file <path to the live content> --template <path under the plugin>
 ```
 
 Matching is byte-exact, so hand it content in the shape the template is in.

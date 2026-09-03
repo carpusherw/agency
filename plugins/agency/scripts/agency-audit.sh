@@ -35,8 +35,9 @@ usage: agency-audit.sh survey [--root <path>] [--no-fetch]
              current    the live file is what the template says now
              matched    it is an earlier revision, so the plugin moved
              edited     it is no revision, and the history is complete
-             truncated  no revision matched and the clone could not be
-                        deepened, so this stays unresolved
+             truncated  no revision matched, and deepening the shallow
+                        clone did not reach far enough, so this stays
+                        unresolved
              no-history there is no clone to walk
 
     --file      the live content. Matching is byte-exact, so hand it a file
@@ -223,8 +224,11 @@ cmd_survey() {
     history="none: $SRC_NOTE. Which side of a difference moved cannot be told apart."
   fi
 
-  published="not checked (--no-fetch)"
-  if [ "$FETCH" = "yes" ] && [ -n "$SRC" ]; then
+  if [ "$FETCH" = "no" ]; then
+    published="not checked (--no-fetch)"
+  elif [ -z "$SRC" ]; then
+    published="not checked — there is no clone to ask, so whether a newer plugin exists is unknown"
+  else
     published="unreachable, so a newer plugin may exist that this audit did not compare against"
     if git -C "$SRC" fetch --quiet origin 2>/dev/null; then
       local ref newest there
