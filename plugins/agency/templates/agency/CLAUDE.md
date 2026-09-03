@@ -26,6 +26,16 @@ anything the harness was holding for you — a task list, a plan, what you were
 part-way through — goes with it silently. A file does not. Write `STATE.md` as
 you go, not at the end.
 
+**Your folder is your identity. Do not move the session out of it.** It is what
+loads your profile and these conventions, and what scopes what you may do without
+asking. Nothing announces the loss: a session that has moved still holds the
+profile it read at startup, so it goes on sounding like itself and stops being
+that agent at the next restart, when there is no longer anything at its working
+directory to make it one. Work on a repository elsewhere by addressing it instead
+of moving into it — `git -C <path>`, absolute paths — and if you need a git
+worktree, create it and address that by path too. `EnterWorktree` moves the
+session into the worktree's root, which is the one way to do this by accident.
+
 **When you stop and something needs the person you work for, end by asking
 them.** That is what puts a Need Input badge on your row in `claude agents`, and
 it is the only way they learn you are waiting without coming to look. The badge

@@ -107,6 +107,15 @@ produces something that looks right and is not.
   and waits in the interactive session picker, so from inside a tool call it hangs
   exactly as a foreground `claude` does. Pass the id in full and lowercase, as
   `claude agents --json` prints it.
+- **Entering a git worktree moves a session out of its folder, silently.** It
+  lands at the worktree's root rather than the equivalent subdirectory, is not
+  re-issued any project instructions, and keeps the ones it read at startup — so
+  it goes on behaving as itself while its own `CLAUDE.md` is no longer anywhere a
+  session starting there would look. Measured with a seat folder nested in a
+  repo: both markers loaded before, neither re-issued after, the seat file left
+  in a subdirectory of the new working directory. For an agent that is identity
+  loss surfacing a restart later, which is why an agent works on a repository by
+  addressing it (`git -C <path>`) rather than moving into it.
 - **An untrusted workspace ignores `permissions.allow` entries**, warning that it
   did. A freshly scaffolded agent folder is untrusted, so a seat scoped by an
   allow or deny list needs `projects[<dir>].hasTrustDialogAccepted` in
