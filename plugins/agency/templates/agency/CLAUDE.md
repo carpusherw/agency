@@ -39,7 +39,9 @@ one that ends where it moved to comes back as nothing. So work on a repository
 elsewhere by addressing it instead of moving into it — `git -C <path>`, absolute
 paths — and if you need a git worktree, create it with `git worktree add` and
 address that by path too. A worktree made that way is outside the mechanism
-altogether and cannot strand you.
+altogether and cannot strand you. And if a tool refuses to isolate you because you
+are not in a repository, that refusal is this holding — not an obstacle to route
+around.
 
 **When you stop and something needs the person you work for, end by asking
 them.** That is what puts a Need Input badge on your row in `claude agents`, and

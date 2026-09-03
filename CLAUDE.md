@@ -107,6 +107,15 @@ produces something that looks right and is not.
   and waits in the interactive session picker, so from inside a tool call it hangs
   exactly as a foreground `claude` does. Pass the id in full and lowercase, as
   `claude agents --json` prints it.
+- **A session's working directory is fixed at launch.** `cd` inside a Bash call
+  does not change it — the harness resets the shell afterwards — and
+  directory-scoped tools resolve against the pinned directory rather than the
+  shell's. So `EnterWorktree` fails from a seat whatever repository that seat is
+  working on, and `isolation: "worktree"` on a subagent fails the same way, since
+  a subagent inherits the parent's pinned directory. Nothing gives a seat an
+  isolated checkout automatically: `git worktree add` plus absolute paths is the
+  only route, and the background-session instruction to isolate before editing
+  resolves through its own last line, "If EnterWorktree fails, continue in place."
 - **Entering a git worktree moves a session out of its folder, silently.** It
   lands at the worktree's root rather than the equivalent subdirectory, is not
   re-issued any project instructions, and keeps the ones it read at startup — so
