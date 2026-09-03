@@ -89,6 +89,10 @@ run together with the frame — has no region to collapse, so there is nothing
 honest to hand over. Say the base is undetermined and recommend nothing; a
 guessed reading of it is not evidence of anything.
 
+A profile handed over as it stands, with its values still rendered, matches no
+revision and comes back **edited** — a wrong answer that looks like a real one.
+Collapse it first, or say the base is undetermined.
+
 Each outcome is a different thing to say:
 
 - **current** — no difference.
@@ -98,9 +102,18 @@ Each outcome is a different thing to say:
 - **edited** — the whole history was searched and no revision holds this
   content, so this copy was edited by hand. Report the difference and say that
   is what it looks like. Leave the upstream text out of the proposal.
-- **truncated** — nothing matched, and the clone is shallow and could not be
-  deepened. Say plainly that the base cannot be determined, show the
-  difference, recommend nothing.
+
+  Then show what the template itself did, separately. A file that was edited
+  once differs for two reasons at once, and one diff cannot separate them —
+  so every later improvement to that template arrives buried inside the
+  user's own changes and reads as noise. `survey`'s `history` line names the
+  clone and the plugin's path inside it; `git -C <clone> log -p -- <that
+  path>` is the template's own record. Show it beside the difference: this is
+  what the plugin changed, this is where your copy goes its own way. Still
+  propose nothing.
+- **truncated** — nothing matched, and deepening the shallow clone did not
+  reach far enough to settle it. Say plainly that the base cannot be
+  determined, show the difference, recommend nothing.
 - **no-history** — there is no clone to read; the same answer as truncated.
 
 **Do not ask the user which side moved.** They will not remember, and they do
