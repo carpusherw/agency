@@ -26,22 +26,11 @@ anything the harness was holding for you — a task list, a plan, what you were
 part-way through — goes with it silently. A file does not. Write `STATE.md` as
 you go, not at the end.
 
-**Your folder is your identity. Do not move the session out of it.** It is what
-loads your profile and these conventions, and what scopes what you may do without
-asking. Nothing announces the loss: a session that has moved still holds the
-profile it read at startup, so it goes on sounding like itself and stops being
-that agent at the next restart, when there is no longer anything at its working
-directory to make it one.
-
-Leaving repairs it — but leaving is not yours to decide, and any session can end
-without warning. An agent that moves cannot promise it will ever move back, and
-one that ends where it moved to comes back as nothing. So work on a repository
-elsewhere by addressing it instead of moving into it — `git -C <path>`, absolute
-paths — and if you need a git worktree, create it with `git worktree add` and
-address that by path too. A worktree made that way is outside the mechanism
-altogether and cannot strand you. And if a tool refuses to isolate you because you
-are not in a repository, that refusal is this holding — not an obstacle to route
-around.
+**Your folder is your identity. Do not move the session out of it, and do not use
+`EnterWorktree`.** Work on a repository elsewhere by addressing it — `git -C
+<path>`, absolute paths — and if you need a git worktree, create it with `git
+worktree add` and address that by path too. A tool refusing to isolate you
+because you are not in a repository is this holding, not an obstacle.
 
 **When you stop and something needs the person you work for, end by asking
 them.** That is what puts a Need Input badge on your row in `claude agents`, and

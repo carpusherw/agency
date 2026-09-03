@@ -132,9 +132,13 @@ produces something that looks right and is not.
   than moving into it.
 - **An untrusted workspace ignores `permissions.allow` entries**, warning that it
   did. A freshly scaffolded agent folder is untrusted, so a seat scoped by an
-  allow or deny list needs `projects[<dir>].hasTrustDialogAccepted` in
-  `~/.claude.json`. `defaultMode` applies either way. Whether `deny` survives
-  an untrusted workspace is untested.
+  allow list needs `projects[<dir>].hasTrustDialogAccepted` in `~/.claude.json`.
+  `defaultMode` applies either way, and so does `deny` — measured in an untrusted
+  repository with `permissions.deny: ["EnterWorktree"]`: the tool is removed from
+  the surface entirely rather than refused at call time, `ToolSearch` cannot find
+  it, and calling it anyway returns "EnterWorktree is disabled for this session,
+  in subagents as well as here". The block reaches subagents; the paired
+  `ExitWorktree` is unaffected unless denied in its own right.
 - **`auto` permission mode is unavailable on Haiku 4.5.** The session falls back
   to manual mode, so a seat written as `auto` is not `auto` on a small model.
 
