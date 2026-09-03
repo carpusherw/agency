@@ -99,6 +99,28 @@ unless you chose otherwise. Every other placeholder is a roster field:
 `session_id` from that agent's own entry, the rest from `agency` and the agent's
 `name`. Pass `--name` on every launch; it is not remembered.
 
+## Keeping an agency current
+
+```
+/agency:audit
+```
+
+An agency is rendered from the templates once, when it is opened and again at
+each hire, and never tracks them afterwards. So a plugin update reaches new
+agencies only, and an office that has been open a while is quietly running on
+what the plugin said the day it opened.
+
+The audit compares your agency against the templates the installed plugin
+carries now — the shared conventions, each agent's profile frame, the first
+seat's job description, the shape of the roster — and says what each difference
+means for the agents living under it. It reads the plugin's own git history to
+work out whether the template moved or you edited your copy, and says so
+plainly when it cannot tell.
+
+Nothing is written until you have seen it and said yes, and whatever it
+replaces is backed up first. Your own edits are yours: a file it cannot trace
+back to a template it reports and leaves alone.
+
 ## Naming
 
 Agent names accept anything a directory can carry, in any language — `行政 助理`
