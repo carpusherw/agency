@@ -91,13 +91,14 @@ and its permission scope:
 
 ```
 cd <agency root>/agents/<agent.name>
-claude --bg --resume <session_id> --name "<agency.logoji> [<agency.name>]: <agent.name>"
+claude --bg --resume <session_id>
 ```
 
 The root is the one thing you supply — where you opened the agency, `~/agency`
-unless you chose otherwise. Every other placeholder is a roster field:
-`session_id` from that agent's own entry, the rest from `agency` and the agent's
-`name`. Pass `--name` on every launch; it is not remembered.
+unless you chose otherwise. `session_id` is that agent's own roster entry, in
+full and lowercase. Pass nothing else: a resumed session already remembers its
+name, and any extra flag starts a copy under a new id rather than resuming the
+session itself.
 
 ## Keeping an agency current
 

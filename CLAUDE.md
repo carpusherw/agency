@@ -79,10 +79,14 @@ produces something that looks right and is not.
   layout and the typed-answer row does not come with it, so a question that
   needs a free-typed answer cannot also preview its options. Option count is not
   the constraint — four options and the row coexist.
-- **`--name` is per launch, not stored with the session.** It sets the title
-  shown in `claude agents`; omit it on a resume and the view retitles the
-  session from its content. Anything that launches an agent must pass it every
-  time.
+- **`--name` is remembered by the session, and passing it again forks a copy.**
+  It sets the title shown in `claude agents`, and a resumed session comes back
+  under the name it was started with. Passing it anyway — or any other flag
+  beyond `--bg --resume <full id>` — starts a *copy* under a new id instead of
+  resuming: the conversation comes across, whatever harness state the session was
+  holding does not, and nothing says so. A new session must be given a name; a
+  resume must not. `hire --resume-session` passes one deliberately and forks for
+  that reason — taking the agency's name is the point of being hired.
 - **A foreground `claude` cannot be launched from inside a tool call.** It wants
   a terminal and a person, so it hangs or returns nothing. Anything an agent is
   told to run must be `--bg` or `-p`.
@@ -94,8 +98,15 @@ produces something that looks right and is not.
 - **A session running as a background agent cannot be resumed elsewhere.** The
   attempt is refused, naming two ways out: stop it, or `--fork-session` to
   branch a copy. Relocating a live session means stopping it first.
-- **`--bg --resume <id>` mints a new session id** and keeps the conversation, so
-  a resumed agent is recorded under its new id like any other launch.
+- **`--bg --resume <full id>` resumes in place** — same id, same name, and the
+  session's task list comes back with its statuses intact. A new id appears only
+  when the launch carries a flag that forks a copy, and a copy starts with an
+  empty task list while its conversation looks untouched. So a plain resume needs
+  no roster write at all.
+- **`--resume` with a shortened id does not resume anything.** It matches nothing
+  and waits in the interactive session picker, so from inside a tool call it hangs
+  exactly as a foreground `claude` does. Pass the id in full and lowercase, as
+  `claude agents --json` prints it.
 - **An untrusted workspace ignores `permissions.allow` entries**, warning that it
   did. A freshly scaffolded agent folder is untrusted, so a seat scoped by an
   allow or deny list needs `projects[<dir>].hasTrustDialogAccepted` in
