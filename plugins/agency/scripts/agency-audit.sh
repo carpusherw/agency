@@ -367,8 +367,11 @@ cmd_base() {
       count=$((count + 1))
       oldest="$rev"
       # A revision that does not parse cannot be what is live under --json; it
-      # digests to nothing and simply fails to match.
-      if [ "$(git -C "$SRC" show "$rev:$tpath" | digest_pipe)" = "$live" ]; then
+      # digests to nothing and simply fails to match. Its stderr is dropped
+      # because that is the only thing it can be: both the live file and the
+      # current template were parsed before the walk began, so a canonicaliser
+      # that were broken would have said so there.
+      if [ "$(git -C "$SRC" show "$rev:$tpath" | digest_pipe 2>/dev/null)" = "$live" ]; then
         found="$rev"
         break
       fi
