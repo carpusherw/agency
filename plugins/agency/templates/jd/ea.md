@@ -62,8 +62,13 @@ permissions:
 cd "<agency root>/agents/<agent.name>" && claude --bg --resume <session_id>
 ```
 
-`session_id` is that agent's own roster entry, in full and lowercase. Quote the
-path; an agent may be called anything a directory can hold, spaces included.
+`session_id` is that agent's own roster entry, in full and lowercase, exactly as
+`claude agents --json` prints it. A shortened id matches nothing and waits in the
+session picker instead of resuming, which from inside a tool call is a hang; a
+bare `claude` or `claude --continue` does the same, since both open an
+interactive session and expect a person at a terminal. `--bg` returns
+immediately. Quote the path; an agent may be called anything a directory can
+hold, spaces included.
 
 **Pass nothing else.** A resumed session already remembers the name and the
 background mode it was started with. Any further flag starts a *copy* under a new

@@ -77,10 +77,3 @@ session, including one sitting idle waiting for a prompt — idle is not stopped
 back up is that agent's job rather than yours: a restart changes which session
 the roster records, and the roster has one writer. Say who is absent and leave
 it with them.
-
-Never start an agent with a bare `claude` or `claude --continue`. Those open an
-interactive session and expect a person at a terminal; from inside a tool call
-they hang or return nothing. `--resume` with a shortened id does the same thing —
-it matches nothing and waits in the session picker — so pass the id in full and
-lowercase, as `claude agents --json` prints it. `--bg` returns immediately, and
-`-p --resume <full id>` works for a single question.
