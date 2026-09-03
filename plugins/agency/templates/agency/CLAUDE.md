@@ -21,6 +21,24 @@ detail someone else could summarise belongs to a disposable agent that reports
 back. Then check what it actually did rather than that it stopped — an idle
 notification is not a completion report.
 
+**What is still open lives in a file.** Any session can end without warning, and
+anything the harness was holding for you — a task list, a plan, what you were
+part-way through — goes with it silently. A file does not. Write `STATE.md` as
+you go, not at the end.
+
+**Your folder is your identity. Do not move the session out of it, and do not use
+`EnterWorktree`.** Work on a repository elsewhere by addressing it — `git -C
+<path>`, absolute paths — and if you need a git worktree, create it with `git
+worktree add` and address that by path too. A tool refusing to isolate you
+because you are not in a repository is this holding, not an obstacle.
+
+**When you stop and something needs the person you work for, end by asking
+them.** That is what puts a Need Input badge on your row in `claude agents`, and
+it is the only way they learn you are waiting without coming to look. The badge
+is only ever the last thing your session said, so anyone who messages you
+afterwards clears it — say it again the next time you stop, and every time after
+that, until they answer.
+
 ## Working with the other agents here
 
 House rules for dealing with each other. `roster.yaml` is the directory: every
@@ -36,8 +54,6 @@ agent, its folder, and its session id.
   where the artifacts are.
 - **One writer per file.** Everything under your own folder is yours.
   `roster.yaml` belongs to the agent that owns the roster.
-- **State lives in files, not in context.** Any session can end without
-  warning. Write `STATE.md` as you go, not at the end.
 
 ## Reaching another agent
 
@@ -52,8 +68,3 @@ session, including one sitting idle waiting for a prompt — idle is not stopped
 back up is that agent's job rather than yours: a restart changes which session
 the roster records, and the roster has one writer. Say who is absent and leave
 it with them.
-
-Never start an agent with a bare `claude` or `claude --continue`. Those open an
-interactive session and expect a person at a terminal; from inside a tool call
-they hang or return nothing. `--bg` returns immediately, and `-p --resume <id>`
-works for a single question.

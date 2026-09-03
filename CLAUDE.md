@@ -79,10 +79,14 @@ produces something that looks right and is not.
   layout and the typed-answer row does not come with it, so a question that
   needs a free-typed answer cannot also preview its options. Option count is not
   the constraint — four options and the row coexist.
-- **`--name` is per launch, not stored with the session.** It sets the title
-  shown in `claude agents`; omit it on a resume and the view retitles the
-  session from its content. Anything that launches an agent must pass it every
-  time.
+- **`--name` is remembered by the session, and passing it again forks a copy.**
+  It sets the title shown in `claude agents`, and a resumed session comes back
+  under the name it was started with. Passing it anyway — or any other flag
+  beyond `--bg --resume <full id>` — starts a *copy* under a new id instead of
+  resuming: the conversation comes across, whatever harness state the session was
+  holding does not, and nothing says so. A new session must be given a name; a
+  resume must not. `hire --resume-session` passes one deliberately and forks for
+  that reason — taking the agency's name is the point of being hired.
 - **A foreground `claude` cannot be launched from inside a tool call.** It wants
   a terminal and a person, so it hangs or returns nothing. Anything an agent is
   told to run must be `--bg` or `-p`.
@@ -94,13 +98,47 @@ produces something that looks right and is not.
 - **A session running as a background agent cannot be resumed elsewhere.** The
   attempt is refused, naming two ways out: stop it, or `--fork-session` to
   branch a copy. Relocating a live session means stopping it first.
-- **`--bg --resume <id>` mints a new session id** and keeps the conversation, so
-  a resumed agent is recorded under its new id like any other launch.
+- **`--bg --resume <full id>` resumes in place** — same id, same name, and the
+  session's task list comes back with its statuses intact. A new id appears only
+  when the launch carries a flag that forks a copy, and a copy starts with an
+  empty task list while its conversation looks untouched. So a plain resume needs
+  no roster write at all.
+- **`--resume` with a shortened id does not resume anything.** It matches nothing
+  and waits in the interactive session picker, so from inside a tool call it hangs
+  exactly as a foreground `claude` does. Pass the id in full and lowercase, as
+  `claude agents --json` prints it.
+- **A session's working directory is fixed at launch.** `cd` inside a Bash call
+  does not change it — the harness resets the shell afterwards — and
+  directory-scoped tools resolve against the pinned directory rather than the
+  shell's. So `EnterWorktree` fails from a seat whatever repository that seat is
+  working on, and `isolation: "worktree"` on a subagent fails the same way, since
+  a subagent inherits the parent's pinned directory. Nothing gives a seat an
+  isolated checkout automatically: `git worktree add` plus absolute paths is the
+  only route, and the background-session instruction to isolate before editing
+  resolves through its own last line, "If EnterWorktree fails, continue in place."
+- **Entering a git worktree moves a session out of its folder, silently.** It
+  lands at the worktree's root rather than the equivalent subdirectory, is not
+  re-issued any project instructions, and keeps the ones it read at startup — so
+  it goes on behaving as itself while its own `CLAUDE.md` is no longer anywhere a
+  session starting there would look. Measured with a seat folder nested in a
+  repo: both markers loaded before, neither re-issued after, the seat file left
+  in a subdirectory of the new working directory. For an agent that is identity
+  loss surfacing a restart later. Exiting repairs it — the working directory is
+  restored and the CWD-dependent caches cleared — but exiting is documented as
+  user-initiated only ("Do NOT call this proactively"), and a session can end at
+  any moment, so the window is not the agent's to close. A worktree made with
+  `git worktree add` is outside both tools; `ExitWorktree` is a no-op on one. That
+  is why an agent works on a repository by addressing it (`git -C <path>`) rather
+  than moving into it.
 - **An untrusted workspace ignores `permissions.allow` entries**, warning that it
   did. A freshly scaffolded agent folder is untrusted, so a seat scoped by an
-  allow or deny list needs `projects[<dir>].hasTrustDialogAccepted` in
-  `~/.claude.json`. `defaultMode` applies either way. Whether `deny` survives
-  an untrusted workspace is untested.
+  allow list needs `projects[<dir>].hasTrustDialogAccepted` in `~/.claude.json`.
+  `defaultMode` applies either way, and so does `deny` — measured in an untrusted
+  repository with `permissions.deny: ["EnterWorktree"]`: the tool is removed from
+  the surface entirely rather than refused at call time, `ToolSearch` cannot find
+  it, and calling it anyway returns "EnterWorktree is disabled for this session,
+  in subagents as well as here". The block reaches subagents; the paired
+  `ExitWorktree` is unaffected unless denied in its own right.
 - **`auto` permission mode is unavailable on Haiku 4.5.** The session falls back
   to manual mode, so a seat written as `auto` is not `auto` on a small model.
 

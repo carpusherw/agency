@@ -18,6 +18,16 @@ they need to know how things are done here.
 - **The office view.** At any moment you can say what is in progress, what is
   blocked, and what needs a decision from the person you work for.
 
+## Keeping track
+
+Several threads are usually open at once, and the person you work for cannot hold
+them all in their head any better than you can. Put each on your task list as it
+arrives and close it when it is done, so what is still open can be read rather
+than reconstructed.
+
+The list is something the harness holds, not a file: it survives a resume and
+dies with a fresh start. `STATE.md` is the record; the list is the view of it.
+
 ## Escalating
 
 Make routine calls yourself. Bring back the decisions that are genuinely the
@@ -49,23 +59,38 @@ Start it from its own folder, in the background, so it keeps its profile and its
 permissions:
 
 ```
-cd "<agency root>/agents/<agent.name>" && claude --bg --resume <session_id> --name "<agency.logoji> [<agency.name>]: <agent.name>"
+cd "<agency root>/agents/<agent.name>" && claude --bg --resume <session_id>
 ```
 
-Every placeholder but the root is a roster field — `session_id` from that
-agent's own entry, the rest from `agency` and the agent's `name`.
+`session_id` is that agent's own roster entry, in full and lowercase, exactly as
+`claude agents --json` prints it. A shortened id matches nothing and waits in the
+session picker instead of resuming, which from inside a tool call is a hang; a
+bare `claude` or `claude --continue` does the same, since both open an
+interactive session and expect a person at a terminal. `--bg` returns
+immediately. Quote the path; an agent may be called anything a directory can
+hold, spaces included.
 
-`--resume` picks up the conversation the roster last recorded. A recorded id
-stops resuming once that session has ended, so if `--resume` fails, drop it and
-start fresh: the agent is its folder, it comes back whole, and `STATE.md` carried
-anything worth keeping.
+**Pass nothing else.** A resumed session already remembers the name and the
+background mode it was started with. Any further flag starts a *copy* under a new
+id instead of resuming the session itself: the conversation comes across, whatever
+the harness was holding for it does not, and nothing says so. `--name` is the easy
+way to do that by accident, and it is the one thing a resume has no use for.
 
-Quote the name and the path; an agent may be called anything a directory can
-hold, spaces included. Pass `--name` on every launch, or the agents view retitles
-the session after its contents.
+A recorded id stops resuming once that session has ended. Then drop `--resume` and
+start fresh — the agent is its folder, it comes back whole, and `STATE.md` carried
+anything worth keeping. A new session has no name to remember, so that launch is
+the one that needs to be given one:
 
-Then write the new session id into the roster. **A session id there is what an
-agent was running, not a permanent address** — sessions end for all sorts of
-reasons and it is not worth tracking which. The entry is a record of the restart
-you just did, and correcting one that has gone stale is your job rather than the
-reporter's.
+```
+cd "<agency root>/agents/<agent.name>" && claude --bg --name "<agency.logoji> [<agency.name>]: <agent.name>"
+```
+
+Every placeholder but the root is a roster field, taken from `agency` and the
+agent's `name`. Pass the name, or the agents view retitles the session after its
+contents.
+
+Write a session id into the roster when it changed — a fresh start gives a new
+one, a resume keeps the one already there. **A session id there is what an agent
+was running, not a permanent address** — sessions end for all sorts of reasons and
+it is not worth tracking which. Correcting one that has gone stale is your job
+rather than the reporter's.
