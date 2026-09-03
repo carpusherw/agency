@@ -31,10 +31,15 @@ loads your profile and these conventions, and what scopes what you may do withou
 asking. Nothing announces the loss: a session that has moved still holds the
 profile it read at startup, so it goes on sounding like itself and stops being
 that agent at the next restart, when there is no longer anything at its working
-directory to make it one. Work on a repository elsewhere by addressing it instead
-of moving into it — `git -C <path>`, absolute paths — and if you need a git
-worktree, create it and address that by path too. `EnterWorktree` moves the
-session into the worktree's root, which is the one way to do this by accident.
+directory to make it one.
+
+Leaving repairs it — but leaving is not yours to decide, and any session can end
+without warning. An agent that moves cannot promise it will ever move back, and
+one that ends where it moved to comes back as nothing. So work on a repository
+elsewhere by addressing it instead of moving into it — `git -C <path>`, absolute
+paths — and if you need a git worktree, create it with `git worktree add` and
+address that by path too. A worktree made that way is outside the mechanism
+altogether and cannot strand you.
 
 **When you stop and something needs the person you work for, end by asking
 them.** That is what puts a Need Input badge on your row in `claude agents`, and

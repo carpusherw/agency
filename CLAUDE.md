@@ -114,8 +114,13 @@ produces something that looks right and is not.
   session starting there would look. Measured with a seat folder nested in a
   repo: both markers loaded before, neither re-issued after, the seat file left
   in a subdirectory of the new working directory. For an agent that is identity
-  loss surfacing a restart later, which is why an agent works on a repository by
-  addressing it (`git -C <path>`) rather than moving into it.
+  loss surfacing a restart later. Exiting repairs it — the working directory is
+  restored and the CWD-dependent caches cleared — but exiting is documented as
+  user-initiated only ("Do NOT call this proactively"), and a session can end at
+  any moment, so the window is not the agent's to close. A worktree made with
+  `git worktree add` is outside both tools; `ExitWorktree` is a no-op on one. That
+  is why an agent works on a repository by addressing it (`git -C <path>`) rather
+  than moving into it.
 - **An untrusted workspace ignores `permissions.allow` entries**, warning that it
   did. A freshly scaffolded agent folder is untrusted, so a seat scoped by an
   allow or deny list needs `projects[<dir>].hasTrustDialogAccepted` in
