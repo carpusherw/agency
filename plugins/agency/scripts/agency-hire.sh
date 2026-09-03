@@ -30,9 +30,9 @@ usage: agency-hire.sh --root <path> --name <agent name> --jd-file <path>
                      .claude/settings.json. One of: default, acceptEdits, auto,
                      plan. Default: default.
   --trust            mark the new agent's folder as a trusted workspace, so
-                     permissions.allow and permissions.deny entries in its
-                     settings are honoured. Only pass this with the user's
-                     explicit consent.
+                     permissions.allow entries in its settings are honoured.
+                     defaultMode and deny apply without it. Only pass this with
+                     the user's explicit consent.
 USAGE
   exit 2
 }
@@ -141,9 +141,10 @@ render "$PLUGIN/templates/agent/STATE.md"      "$AGENT_DIR/STATE.md"
 render "$PLUGIN/templates/agent/settings.json" "$AGENT_DIR/.claude/settings.json"
 : > "$AGENT_DIR/journal/$MONTH.md"
 
-# Trust is what makes permissions.allow and permissions.deny in the seat's own
-# settings take effect; without it they are ignored. It is a change to the
-# user's global config, so it happens only on an explicit --trust.
+# Trust is what makes permissions.allow in the seat's own settings take effect;
+# without it those entries are ignored, while defaultMode and deny apply either
+# way. It is a change to the user's global config, so it happens only on an
+# explicit --trust.
 TRUST_NOTE=""
 if [ "$TRUST" = "yes" ]; then
   CONFIG="$HOME/.claude.json"

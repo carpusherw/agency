@@ -46,6 +46,7 @@ Read both sides and diff them.
 | `<root>/CLAUDE.md` | `templates/agency/CLAUDE.md` — a copy, nothing substituted |
 | the frame of `agents/<name>/CLAUDE.md`: its heading, `## Your files`, `## Your identity` | `templates/agent/CLAUDE.md` |
 | the first seat's job description | `templates/jd/ea.md` |
+| each seat's `.claude/settings.json` | `templates/agent/settings.json`, with `{{PERMISSION_MODE}}` put back |
 | `roster.yaml` | `templates/agency/roster.yaml`, its keys only |
 
 A profile is `templates/agent/CLAUDE.md` with a job description substituted into
@@ -60,9 +61,21 @@ and session ids in it are the office itself. A key the template carries and the
 roster does not is what a renamed or dropped field looks like from here, and it
 is the one thing in the roster worth reporting.
 
-`STATE.md`, `journal/` and `.claude/settings.json` are checked for existence and
-no further. Their contents are the seat's own, and the settings file in
-particular is the scope the user is meant to edit.
+**Every seat's settings file has an upstream, not just the first one's.** The
+template is rendered the same way for each of them, so each is compared against
+it separately and each drifts on its own. What it carries is what that agent may
+do without asking, and a limit added to the template — a tool no seat should
+reach for — arrives in an office already open only if something carries it
+there.
+
+It substitutes one value, so collapsing it is putting `{{PERMISSION_MODE}}` back
+as `permissions.defaultMode` and changing nothing else. The mode itself is that
+seat's own scope and is never a difference: a seat on `plan` and a seat on
+`auto` collapse to the same content. Compare it with `--json`, below — it is the
+one file here that a formatter can rewrite without changing what it says.
+
+`STATE.md` and `journal/` are checked for existence and no further. Their
+contents are the seat's own.
 
 ## Which side moved
 
@@ -73,15 +86,17 @@ rendered — which is in the plugin's own git history:
 
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/agency-audit.sh base \
-  --file <path to the live content> --template <path under the plugin>
+  --file <path to the live content> --template <path under the plugin> [--json]
 ```
 
-Matching is byte-exact, so hand it content in the shape the template is in.
-`<root>/CLAUDE.md` already is. For a profile's frame, read
-`templates/agent/CLAUDE.md`, see what it substitutes, and write the live profile
-out with each of those values put back as its placeholder — the job description
-collapsed to `{{JD}}`, the name, title and folder to theirs. For the first
-seat's job description, write out the region the profile carries in its place.
+Content is matched byte for byte unless `--json` is passed, so hand it content
+in the shape the template is in. `<root>/CLAUDE.md` already is. For a profile's
+frame, read `templates/agent/CLAUDE.md`, see what it substitutes, and write the
+live profile out with each of those values put back as its placeholder — the job
+description collapsed to `{{JD}}`, the name, title and folder to theirs. For the
+first seat's job description, write out the region the profile carries in its
+place. For a settings file, put `{{PERMISSION_MODE}}` back as
+`permissions.defaultMode`.
 
 That reversal is also the test of whether the base is knowable at all. A profile
 someone has restructured — sections reordered, the job description broken up and
@@ -92,6 +107,14 @@ guessed reading of it is not evidence of anything.
 A profile handed over as it stands, with its values still rendered, matches no
 revision and comes back **edited** — a wrong answer that looks like a real one.
 Collapse it first, or say the base is undetermined.
+
+**`--json` for a JSON template, and only for one.** With it both sides are
+parsed and compared with their keys sorted and their spacing fixed, so a
+settings file some editor reflowed or reordered reads as unchanged rather than
+as someone's edit. Without it that reformatting is a difference like any other,
+which is what Markdown wants and JSON does not. `templates/agent/settings.json`
+is the only JSON template today, so a settings file is the only place the flag
+belongs.
 
 Each outcome is a different thing to say:
 
@@ -115,6 +138,17 @@ Each outcome is a different thing to say:
   reach far enough to settle it. Say plainly that the base cannot be
   determined, show the difference, recommend nothing.
 - **no-history** — there is no clone to read; the same answer as truncated.
+
+**A removal that lands back on an earlier revision comes back `matched`.**
+Delete the thing an audit added and the file is once again, exactly, what the
+template said before it was added — so the next audit finds a revision holding
+that content, reads the difference as the plugin's doing, and proposes the same
+patch a second time. Nothing distinguishes it from a copy that was never
+patched, because nothing here records what was applied. This is true of every
+file compared, not only settings. Nothing is written without consent, so the
+cost is being asked again rather than being overruled; when a patch only adds
+something back, say that it may have been removed deliberately, instead of
+presenting it as news.
 
 **Do not ask the user which side moved.** They will not remember, and they do
 not need to: every change is shown before it is written, so what is in front of
@@ -146,7 +180,9 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/agency-audit.sh apply --file <live> --from <new>
 ```
 
 It backs the file up before writing and reads it back afterwards. Apply only
-what was shown — a patch to a profile is the current frame carrying that agent's
-own job description, never the template's placeholder.
+what was shown, with this seat's own values rendered back in — a patch to a
+profile is the current frame carrying that agent's job description, a patch to a
+settings file carries that seat's permission mode, and neither ever carries the
+template's placeholder.
 
 Say where each backup landed, and which findings were left alone.

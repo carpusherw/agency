@@ -16,6 +16,7 @@ usage() {
   cat >&2 <<'USAGE'
 usage: agency-audit.sh survey [--root <path>] [--no-fetch]
        agency-audit.sh base --file <path> --template <path under the plugin>
+                            [--json]
        agency-audit.sh apply --file <path> --from <path>
 
   survey   the facts an audit starts from: the agency root, the roster parsed
@@ -40,10 +41,15 @@ usage: agency-audit.sh survey [--root <path>] [--no-fetch]
                         unresolved
              no-history there is no clone to walk
 
-    --file      the live content. Matching is byte-exact, so hand it a file
-                whose rendered values have been put back as {{PLACEHOLDERS}}.
+    --file      the live content. Hand it a file whose rendered values have
+                been put back as {{PLACEHOLDERS}}. Matched byte for byte
+                unless --json is passed.
     --template  the template to walk, relative to the plugin root, e.g.
                 templates/agency/CLAUDE.md
+    --json      compare both sides as JSON rather than as bytes: each is
+                parsed and re-emitted with its keys sorted and its spacing
+                fixed, so a reformatted or reordered file is not a
+                difference. Both sides must parse.
 
   apply    write a patch, keeping a backup of whatever was there.
 
@@ -64,7 +70,7 @@ case "$COMMAND" in
   *) die "unknown command: $COMMAND" ;;
 esac
 
-ROOT="" FILE="" FROM="" TEMPLATE="" MARKETPLACE="" FETCH="yes"
+ROOT="" FILE="" FROM="" TEMPLATE="" MARKETPLACE="" FETCH="yes" JSON="no"
 while [ $# -gt 0 ]; do
   case "$1" in
     --root)        ROOT="${2-}"; shift 2 ;;
@@ -74,6 +80,7 @@ while [ $# -gt 0 ]; do
     --plugin)      PLUGIN="${2-}"; shift 2 ;;
     --marketplace) MARKETPLACE="${2-}"; shift 2 ;;
     --no-fetch)    FETCH="no"; shift ;;
+    --json)        JSON="yes"; shift ;;
     -h|--help)     usage ;;
     *) die "unknown argument: $1" ;;
   esac
@@ -96,6 +103,22 @@ PLUGIN="$(cd "$PLUGIN" && pwd -P)"
 hash_of()  { shasum -a 256 < "$1" | cut -d' ' -f1; }
 plural()   { [ "$1" = 1 ] && printf '1 revision' || printf '%s revisions' "$1"; }
 hash_pipe() { shasum -a 256 | cut -d' ' -f1; }
+
+# What `base` compares two pieces of content by. Bytes, which is what Markdown
+# wants: there a reflowed paragraph is a real difference. Under --json both
+# sides are parsed and re-emitted with their keys sorted and their spacing
+# fixed first, because an editor that rewrites a settings file without changing
+# what it says would otherwise read as a human edit. Fails on content that does
+# not parse — silently, because every caller reports that in its own words.
+canonical() {
+  if [ "$JSON" = "yes" ]; then
+    python3 -c 'import json,sys; json.dump(json.load(sys.stdin), sys.stdout, sort_keys=True, separators=(",", ":"))' 2>/dev/null
+  else
+    cat
+  fi
+}
+digest_pipe() { canonical | hash_pipe; }
+digest_of()   { digest_pipe < "$1"; }
 
 # Read one field out of a plugin manifest arriving on stdin.
 manifest_field() {
@@ -308,13 +331,14 @@ cmd_base() {
   [ -f "$FILE" ] || die "no such file: $FILE"
   [ -f "$PLUGIN/$TEMPLATE" ] || die "the plugin has no template at $TEMPLATE"
 
-  local live
-  live="$(hash_of "$FILE")"
+  local live now
+  live="$(digest_of "$FILE")" || die "--json was passed, but $FILE does not parse as JSON"
+  now="$(digest_of "$PLUGIN/$TEMPLATE")" || die "--json was passed, but the template $TEMPLATE does not parse as JSON"
 
   printf 'template     %s\n' "$TEMPLATE"
   printf 'file         %s\n' "$FILE"
 
-  if [ "$live" = "$(hash_of "$PLUGIN/$TEMPLATE")" ]; then
+  if [ "$live" = "$now" ]; then
     printf 'outcome      current\n'
     return 0
   fi
@@ -342,7 +366,9 @@ cmd_base() {
     while IFS= read -r rev; do
       count=$((count + 1))
       oldest="$rev"
-      if [ "$(git -C "$SRC" show "$rev:$tpath" | hash_pipe)" = "$live" ]; then
+      # A revision that does not parse cannot be what is live under --json; it
+      # digests to nothing and simply fails to match.
+      if [ "$(git -C "$SRC" show "$rev:$tpath" | digest_pipe)" = "$live" ]; then
         found="$rev"
         break
       fi
