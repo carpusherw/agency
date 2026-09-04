@@ -128,21 +128,75 @@ hash_of()  { shasum -a 256 < "$1" | cut -d' ' -f1; }
 plural()   { [ "$1" = 1 ] && printf '1 revision' || printf '%s revisions' "$1"; }
 hash_pipe() { shasum -a 256 | cut -d' ' -f1; }
 
+# Whether a program is here, and whether it works, asked separately: they are
+# different things to tell someone, and being on PATH is not the same as being
+# able to run. Every program asked about below answers --version.
+on_path() { command -v "$1" >/dev/null 2>&1; }
+runs()    { "$1" --version >/dev/null 2>&1; }
+
+# Every verb runs programs of its own, and one that is missing or broken has to
+# be named here. Unchecked it arrives as the shell's own "command not found" on
+# stderr while the script either carries on with a hole in its report or dies
+# about something else entirely — which is how a missing hasher came to be
+# reported as a file that would not parse.
+require() {
+  local tool
+  for tool in "$@"; do
+    if ! on_path "$tool"; then
+      die "$COMMAND needs $tool, which is not on PATH"
+    elif ! runs "$tool"; then
+      die "$COMMAND needs $tool, which is at $(command -v "$tool") but would not run"
+    fi
+  done
+}
+
 # What `base` compares two pieces of content by. Bytes, which is what Markdown
 # wants: there a reflowed paragraph is a real difference. For a JSON template
 # both sides are parsed and re-emitted with their keys sorted and their spacing
 # fixed first, because an editor that rewrites a settings file without changing
-# what it says would otherwise read as a human edit. Fails on content that does
-# not parse — silently, because every caller reports that in its own words.
+# what it says would otherwise read as a human edit.
+#
+# Content that does not parse exits 3, and nothing else does, so a caller can
+# tell that from the canonicaliser having failed to run at all. Those are
+# opposite findings — one is the user's file, the other is this machine — and
+# reporting the second as the first is the whole reason for the exit code.
+CANNOT_PARSE=3
 canonical() {
   if [ "$JSON" = "yes" ]; then
-    python3 -c 'import json,sys; json.dump(json.load(sys.stdin), sys.stdout, sort_keys=True, separators=(",", ":"))' 2>/dev/null
+    python3 -c 'import json, sys
+try:
+    document = json.load(sys.stdin)
+except ValueError:
+    sys.exit(3)
+json.dump(document, sys.stdout, sort_keys=True, separators=(",", ":"))'
   else
     cat
   fi
 }
 digest_pipe() { canonical | hash_pipe; }
 digest_of()   { digest_pipe < "$1"; }
+
+# Run the canonicaliser for its exit status alone, and turn that into words.
+# Doing it before the digest is what keeps the two apart: after this the only
+# thing left in the pipeline is the hasher, and `require` has already found it.
+# Both modes are checked, not only JSON — a reader of bytes that does not run
+# is the same wrong answer as a parser that does not run, just quieter.
+parses() {
+  local status=0
+  canonical < "$1" >/dev/null || status=$?
+  if [ "$status" = 0 ]; then
+    return 0
+  fi
+  if [ "$JSON" = "yes" ]; then
+    case "$status" in
+      "$CANNOT_PARSE")
+        die "$2 does not parse as JSON, and $TEMPLATE is compared as JSON" ;;
+      *)
+        die "python3 exited $status reading $2, so whether it parses as JSON is unknown. This is not a fault in the file." ;;
+    esac
+  fi
+  die "cat exited $status reading $2, so its bytes could not be read. This is not a fault in the file."
+}
 
 # Read one field out of a plugin manifest arriving on stdin.
 manifest_field() {
@@ -269,6 +323,17 @@ resolve_history() {
   [ -n "$SRC" ] && return 0
   local top name candidate
 
+  # Named rather than left to fall through: without git every probe below fails
+  # the same way a plugin outside a clone does, and the note would report this
+  # machine's missing tool as a fact about the user's plugin.
+  if ! on_path git; then
+    SRC_NOTE="git is not on PATH, so the plugin's own history cannot be read"
+    return 1
+  elif ! runs git; then
+    SRC_NOTE="git is at $(command -v git) but would not run, so the plugin's own history cannot be read"
+    return 1
+  fi
+
   if [ -n "$MARKETPLACE" ]; then
     top="$MARKETPLACE"
   elif top="$(git -C "$PLUGIN" rev-parse --show-toplevel 2>/dev/null)"; then
@@ -315,6 +380,10 @@ is_shallow() { [ "$(git -C "$SRC" rev-parse --is-shallow-repository)" = "true" ]
 # -------------------------------------------------------------------- survey
 
 cmd_survey() {
+  # A survey that cannot name the plugin version is not a survey: the whole
+  # audit rests on that number, and reporting `(unversioned)` at rc=0 is a
+  # clean bill of health against templates that may have moved.
+  require perl python3
   resolve_root
 
   local installed history published
@@ -408,6 +477,7 @@ AGENT
 
 cmd_collapse() {
   [ -n "$AGENT" ] && [ -n "$WHAT" ] || usage
+  require perl python3
   resolve_root
   roster_seat "$AGENT"
 
@@ -579,12 +649,20 @@ cmd_base() {
     esac
   fi
 
+  require shasum
+  [ "$JSON" = "no" ] || require python3
+
+  # Which of the two possible failures it was, before either side is hashed.
+  parses "$FILE" "$FILE"
+  parses "$PLUGIN/$TEMPLATE" "the template $TEMPLATE"
+
   local live now
-  live="$(digest_of "$FILE")" || die "$TEMPLATE is compared as JSON, but $FILE does not parse as JSON"
-  now="$(digest_of "$PLUGIN/$TEMPLATE")" || die "$TEMPLATE is compared as JSON, but does not parse as JSON"
+  live="$(digest_of "$FILE")" || die "$FILE canonicalises but could not be hashed"
+  now="$(digest_of "$PLUGIN/$TEMPLATE")" || die "the template $TEMPLATE canonicalises but could not be hashed"
 
   printf 'template     %s\n' "$TEMPLATE"
   printf 'file         %s\n' "$FILE"
+  printf 'compared     %s\n' "$([ "$JSON" = "yes" ] && printf 'as JSON' || printf 'byte for byte')"
 
   if [ "$live" = "$now" ]; then
     printf 'outcome      current\n'
@@ -654,6 +732,7 @@ cmd_base() {
 
 cmd_apply() {
   [ -n "$FILE" ] && [ -n "$FROM" ] || usage
+  require shasum
   FILE="$(expand "$FILE")"
   FROM="$(expand "$FROM")"
   [ -f "$FROM" ] || die "no such file: $FROM"
