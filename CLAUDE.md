@@ -139,6 +139,13 @@ produces something that looks right and is not.
   it, and calling it anyway returns "EnterWorktree is disabled for this session,
   in subagents as well as here". The block reaches subagents; the paired
   `ExitWorktree` is unaffected unless denied in its own right.
+- **A `permissions.deny` written to a seat's settings takes effect in a session
+  already running.** Measured: after an audit wrote `deny: ["EnterWorktree"]`
+  into a live seat, the tool was gone from that session's surface while
+  `ExitWorktree` was still findable as a control. Project instructions are not
+  live in the same way — a `CLAUDE.md` change waits for a restart. So a settings
+  write is not a deferred proposal: it changes what every running agent may do,
+  at once.
 - **`auto` permission mode is unavailable on Haiku 4.5.** The session falls back
   to manual mode, so a seat written as `auto` is not `auto` on a small model.
 

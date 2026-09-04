@@ -15,19 +15,38 @@ die() { printf 'agency-audit: %s\n' "$1" >&2; exit 1; }
 usage() {
   cat >&2 <<'USAGE'
 usage: agency-audit.sh survey [--root <path>] [--no-fetch]
+       agency-audit.sh collapse --agent <name> --what frame|jd|settings
+                                [--root <path>]
        agency-audit.sh base --file <path> --template <path under the plugin>
                             [--json]
        agency-audit.sh apply --file <path> --from <path>
 
   survey   the facts an audit starts from: the agency root, the roster parsed
-           into agents and folders, which of a seat's files exist, the version
-           of the plugin being compared against, and whether the marketplace
-           carries a newer one.
+           into agents and folders, which of a seat's files exist, when an
+           audit last wrote a patch here, the version of the plugin being
+           compared against, and whether the marketplace carries a newer one.
 
     --root      the agency to audit. Default: the nearest roster.yaml at or
                 above the working directory.
     --no-fetch  report the installed version without asking the marketplace
                 whether a newer one exists. Skips the only step needing network.
+
+  collapse one seat's live content on stdout with the values it was rendered
+           with put back as {{PLACEHOLDERS}} — the shape `base` has to be
+           handed. Where the job description begins and ends is read off the
+           template rather than assumed, and a value is put back only where it
+           occurs exactly once. Anything it cannot reverse exits non-zero
+           saying so: that is a base which cannot be determined, and it is not
+           the same as a difference.
+
+    --agent  the seat, by the name the roster gives it.
+    --what   frame     the profile, its job description collapsed to {{JD}};
+                       compare against templates/agent/CLAUDE.md
+             jd        that job description on its own; compare against
+                       templates/jd/ea.md
+             settings  the seat's settings.json; compare against
+                       templates/agent/settings.json
+    --root   as for survey.
 
   base     which revision of a template a live file came from, by matching its
            content against that template's history in the plugin's own git
@@ -41,15 +60,16 @@ usage: agency-audit.sh survey [--root <path>] [--no-fetch]
                         unresolved
              no-history there is no clone to walk
 
-    --file      the live content. Hand it a file whose rendered values have
-                been put back as {{PLACEHOLDERS}}. Matched byte for byte
-                unless --json is passed.
+    --file      the live content, as `collapse` writes it: a file whose
+                rendered values have been put back as {{PLACEHOLDERS}}.
     --template  the template to walk, relative to the plugin root, e.g.
-                templates/agency/CLAUDE.md
-    --json      compare both sides as JSON rather than as bytes: each is
-                parsed and re-emitted with its keys sorted and its spacing
-                fixed, so a reformatted or reordered file is not a
-                difference. Both sides must parse.
+                templates/agency/CLAUDE.md. Its path decides how the two
+                sides are compared: byte for byte, or as JSON where the
+                template is a .json.
+    --json      compare as JSON even where the template's path does not say
+                so. Both sides are parsed and re-emitted with their keys
+                sorted and their spacing fixed, so a reformatted or reordered
+                file is not a difference; both must parse.
 
   apply    write a patch, keeping a backup of whatever was there.
 
@@ -65,15 +85,19 @@ USAGE
 [ $# -gt 0 ] || usage
 COMMAND="$1"; shift
 case "$COMMAND" in
-  survey|base|apply) ;;
+  survey|collapse|base|apply) ;;
   -h|--help) usage ;;
   *) die "unknown command: $COMMAND" ;;
 esac
 
-ROOT="" FILE="" FROM="" TEMPLATE="" MARKETPLACE="" FETCH="yes" JSON="no"
+# JSON starts at auto: the template's path decides, and --json overrides it.
+ROOT="" FILE="" FROM="" TEMPLATE="" MARKETPLACE="" FETCH="yes" JSON="auto"
+AGENT="" WHAT=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --root)        ROOT="${2-}"; shift 2 ;;
+    --agent)       AGENT="${2-}"; shift 2 ;;
+    --what)        WHAT="${2-}"; shift 2 ;;
     --file)        FILE="${2-}"; shift 2 ;;
     --from)        FROM="${2-}"; shift 2 ;;
     --template)    TEMPLATE="${2-}"; shift 2 ;;
@@ -105,8 +129,8 @@ plural()   { [ "$1" = 1 ] && printf '1 revision' || printf '%s revisions' "$1"; 
 hash_pipe() { shasum -a 256 | cut -d' ' -f1; }
 
 # What `base` compares two pieces of content by. Bytes, which is what Markdown
-# wants: there a reflowed paragraph is a real difference. Under --json both
-# sides are parsed and re-emitted with their keys sorted and their spacing
+# wants: there a reflowed paragraph is a real difference. For a JSON template
+# both sides are parsed and re-emitted with their keys sorted and their spacing
 # fixed first, because an editor that rewrites a settings file without changing
 # what it says would otherwise read as a human edit. Fails on content that does
 # not parse — silently, because every caller reports that in its own words.
@@ -155,6 +179,68 @@ agency_field() {
 }
 
 exists() { if [ -e "$1" ]; then printf 'present'; else printf 'missing'; fi; }
+
+# The agency a command is about, and its roster. --root names it; otherwise it
+# is the nearest one at or above the working directory, which is what an agent
+# auditing its own agency gets by passing nothing.
+ROSTER=""
+resolve_root() {
+  if [ -z "$ROOT" ]; then
+    ROOT="$(find_root)" || die "no roster.yaml at or above $PWD. Name the agency with --root, or open one with the agency:open skill."
+  fi
+  [ -d "$ROOT" ] || die "no such agency: $ROOT"
+  [ -f "$ROOT/roster.yaml" ] || die "no agency at $ROOT (roster.yaml is missing). Open one with the agency:open skill."
+  ROOT="$(cd "$ROOT" && pwd -P)"
+  ROSTER="$ROOT/roster.yaml"
+}
+
+# One seat out of the roster. The roster is the only place a seat's rendered
+# values survive, which is what makes putting them back possible at all.
+SEAT_NAME="" SEAT_TITLE="" SEAT_FOLDER=""
+roster_seat() {
+  local want="$1" line name=""
+  SEAT_NAME="" SEAT_TITLE="" SEAT_FOLDER=""
+  while IFS= read -r line; do
+    case "$line" in
+      "  - name: "*)   name="$(yaml_unquote "${line#  - name: }")"
+                       if [ "$name" = "$want" ]; then SEAT_NAME="$name"; fi ;;
+      "    title: "*)  if [ "$name" = "$want" ]; then SEAT_TITLE="$(yaml_unquote "${line#    title: }")"; fi ;;
+      "    folder: "*) if [ "$name" = "$want" ]; then SEAT_FOLDER="$(yaml_unquote "${line#    folder: }")"; fi ;;
+    esac
+  done < "$ROSTER"
+  [ -n "$SEAT_NAME" ] || die "no agent called $want in $ROSTER"
+  [ -n "$SEAT_FOLDER" ] || die "the roster gives $want no folder, so there is nothing to read"
+}
+
+# What a previous audit left behind. `apply` backs a file up before writing it,
+# so a backup is the only record that an audit ever wrote here, and the newest
+# timestamp is when this office was last brought into line.
+audit_history() {
+  local file stamp count=0 newest="" newest_stamp="" label
+  while IFS= read -r -d '' file; do
+    stamp="${file##*.agency-audit.}"
+    stamp="${stamp%.bak}"
+    case "$stamp" in
+      [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]) ;;
+      *) continue ;;
+    esac
+    count=$((count + 1))
+    if [ "$stamp" \> "$newest_stamp" ]; then
+      newest_stamp="$stamp"
+      newest="$file"
+    fi
+  done < <(find "$ROOT" -type f -name '*.agency-audit.*.bak' -print0 2>/dev/null)
+
+  if [ "$count" = 0 ]; then
+    printf 'never — nothing here carries a backup, so no audit has written a patch'
+    return 0
+  fi
+  if [ "$count" = 1 ]; then label="1 backup"; else label="the newest of $count backups"; fi
+  printf '%s-%s-%s %s:%s:%s — %s, at %s' \
+    "${newest_stamp:0:4}" "${newest_stamp:4:2}" "${newest_stamp:6:2}" \
+    "${newest_stamp:9:2}" "${newest_stamp:11:2}" "${newest_stamp:13:2}" \
+    "$label" "${newest#"$ROOT"/}"
+}
 
 # What `claude plugin` calls this plugin: its manifest name, and the
 # marketplace it was installed from when it came from one.
@@ -229,13 +315,7 @@ is_shallow() { [ "$(git -C "$SRC" rev-parse --is-shallow-repository)" = "true" ]
 # -------------------------------------------------------------------- survey
 
 cmd_survey() {
-  if [ -z "$ROOT" ]; then
-    ROOT="$(find_root)" || die "no roster.yaml at or above $PWD. Name the agency with --root, or open one with the agency:open skill."
-  fi
-  [ -d "$ROOT" ] || die "no such agency: $ROOT"
-  [ -f "$ROOT/roster.yaml" ] || die "no agency at $ROOT (roster.yaml is missing). Open one with the agency:open skill."
-  ROOT="$(cd "$ROOT" && pwd -P)"
-  ROSTER="$ROOT/roster.yaml"
+  resolve_root
 
   local installed history published
   installed="$(manifest_field version < "$PLUGIN/.claude-plugin/plugin.json")"
@@ -279,6 +359,7 @@ opened       $(agency_field opened)
 plugin       $installed at $PLUGIN
 history      $history
 marketplace  $published
+audited      $(audit_history)
 
 CLAUDE.md    $(exists "$ROOT/CLAUDE.md")
 roster.yaml  present
@@ -323,6 +404,161 @@ AGENT
   return 0
 }
 
+# ------------------------------------------------------------------ collapse
+
+cmd_collapse() {
+  [ -n "$AGENT" ] && [ -n "$WHAT" ] || usage
+  resolve_root
+  roster_seat "$AGENT"
+
+  local dir="$ROOT/$SEAT_FOLDER" live template
+  case "$WHAT" in
+    frame|jd) live="$dir/CLAUDE.md";             template="templates/agent/CLAUDE.md" ;;
+    settings) live="$dir/.claude/settings.json"; template="templates/agent/settings.json" ;;
+    *) die "unknown --what: $WHAT. Expected frame, jd or settings." ;;
+  esac
+  [ -f "$live" ] || die "no such file: $live"
+  [ -f "$PLUGIN/$template" ] || die "the plugin has no template at $template"
+
+  WHAT="$WHAT" LIVE="$live" SHAPE="$PLUGIN/$template" \
+  SEAT_NAME="$SEAT_NAME" SEAT_TITLE="$SEAT_TITLE" SEAT_FOLDER="$SEAT_FOLDER" \
+  python3 - <<'COLLAPSE'
+import json
+import os
+import re
+import sys
+
+what = os.environ["WHAT"]
+live_path = os.environ["LIVE"]
+shape_path = os.environ["SHAPE"]
+
+PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
+
+
+def die(message):
+    sys.stderr.write("agency-audit: %s\n" % message)
+    raise SystemExit(1)
+
+
+def note(message):
+    sys.stderr.write("agency-audit: %s\n" % message)
+
+
+def read(path):
+    with open(path, encoding="utf-8") as handle:
+        return handle.read()
+
+
+live = read(live_path)
+shape = read(shape_path)
+
+if what == "settings":
+    # The template is the authority on which values were substituted: a leaf
+    # that is nothing but a placeholder marks a path whose live value is this
+    # seat's own. Everything else the live file carries passes through, so a
+    # key someone added stays a real difference rather than being tidied away.
+    try:
+        document = json.loads(live)
+    except ValueError as error:
+        die("%s does not parse as JSON: %s" % (live_path, error))
+    try:
+        wanted = json.loads(shape)
+    except ValueError as error:
+        die("the template %s does not parse as JSON: %s" % (shape_path, error))
+
+    def placeholder_paths(node, path=()):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                for found in placeholder_paths(value, path + (key,)):
+                    yield found
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                for found in placeholder_paths(value, path + (index,)):
+                    yield found
+        elif isinstance(node, str) and PLACEHOLDER.fullmatch(node):
+            yield path, node
+
+    for path, placeholder in placeholder_paths(wanted):
+        node = document
+        for step in path[:-1]:
+            node = node.get(step) if isinstance(node, dict) else None
+        leaf = path[-1]
+        if isinstance(node, dict) and leaf in node:
+            node[leaf] = placeholder
+        else:
+            note("%s has no %s, so there was nothing to put %s back over"
+                 % (live_path, ".".join(str(step) for step in path), placeholder))
+
+    sys.stdout.write(json.dumps(document, indent=2, ensure_ascii=False) + "\n")
+    raise SystemExit(0)
+
+# Where the job description sits is read off the template rather than written
+# down anywhere: the literal run before {{JD}} is what closes the heading, and
+# the run after it is what opens the next section. The description is
+# everything between them, and the blank line before that section belongs to
+# the section, not to the description.
+marker = "{{JD}}"
+at = shape.find(marker)
+if at < 0:
+    die("the template %s carries no %s, so there is no job description to collapse"
+        % (shape_path, marker))
+
+opens = PLACEHOLDER.split(shape[:at])[-1]
+closes = re.match(r"\A\n*[^\n]*", PLACEHOLDER.split(shape[at + len(marker):])[0]).group(0)
+if not opens or not closes.strip():
+    die("%s puts %s against nothing that can be found in a rendered copy"
+        % (shape_path, marker))
+
+start = live.find(opens)
+if start < 0:
+    die("%s does not open the way %s does, so where its job description begins "
+        "cannot be found. The base cannot be determined." % (live_path, shape_path))
+start += len(opens)
+
+end = live.find(closes, start)
+if end < 0:
+    die("%s carries no %r after its job description, so where the description "
+        "ends cannot be found. The base cannot be determined."
+        % (live_path, closes.strip()))
+
+if what == "jd":
+    # render substituted $(cat <file>), which drops the trailing newline. Put
+    # it back, so this compares against a job description as a file.
+    sys.stdout.write(live[start:end] + "\n")
+    raise SystemExit(0)
+
+# The two halves of the frame, held apart so a value can never be looked for
+# inside the {{JD}} that replaces what was between them.
+pieces = [live[:start], live[end:]]
+
+# Longest value first, so one carrying another inside it — a folder holding the
+# agent's name — is put back whole before its parts are looked for.
+values = [
+    ("AGENT_FOLDER", os.environ.get("SEAT_FOLDER", "")),
+    ("AGENT_NAME", os.environ.get("SEAT_NAME", "")),
+    ("TITLE", os.environ.get("SEAT_TITLE", "")),
+]
+for name, value in sorted(values, key=lambda pair: len(pair[1]), reverse=True):
+    if not value:
+        continue
+    placeholder = "{{%s}}" % name
+    seen = sum(piece.count(value) for piece in pieces)
+    if seen > 1:
+        die("%r appears %d times in %s outside the job description. Every "
+            "template here substitutes a value once, so which occurrence is "
+            "%s cannot be told and a collapse would be a guess. The base "
+            "cannot be determined." % (value, seen, live_path, placeholder))
+    if seen == 1:
+        pieces = [piece.replace(value, placeholder) for piece in pieces]
+    elif placeholder in shape:
+        note("%s carries %s, but %r is nowhere in %s outside the job "
+             "description, so nothing was put back for it"
+             % (shape_path, placeholder, value, live_path))
+
+sys.stdout.write(pieces[0] + marker + pieces[1])
+COLLAPSE
+}
+
 # ---------------------------------------------------------------------- base
 
 cmd_base() {
@@ -331,9 +567,21 @@ cmd_base() {
   [ -f "$FILE" ] || die "no such file: $FILE"
   [ -f "$PLUGIN/$TEMPLATE" ] || die "the plugin has no template at $TEMPLATE"
 
+  # How to compare is a property of the template, not of the file handed over:
+  # the template lives inside the plugin and its extension is the plugin
+  # author saying what the format is, while --file is a scratch path the
+  # caller invented and its name says nothing. --json stays for a JSON
+  # template that is not named like one.
+  if [ "$JSON" = "auto" ]; then
+    case "$TEMPLATE" in
+      *.json) JSON="yes" ;;
+      *)      JSON="no" ;;
+    esac
+  fi
+
   local live now
-  live="$(digest_of "$FILE")" || die "--json was passed, but $FILE does not parse as JSON"
-  now="$(digest_of "$PLUGIN/$TEMPLATE")" || die "--json was passed, but the template $TEMPLATE does not parse as JSON"
+  live="$(digest_of "$FILE")" || die "$TEMPLATE is compared as JSON, but $FILE does not parse as JSON"
+  now="$(digest_of "$PLUGIN/$TEMPLATE")" || die "$TEMPLATE is compared as JSON, but does not parse as JSON"
 
   printf 'template     %s\n' "$TEMPLATE"
   printf 'file         %s\n' "$FILE"
@@ -430,7 +678,8 @@ cmd_apply() {
 }
 
 case "$COMMAND" in
-  survey) cmd_survey ;;
-  base)   cmd_base ;;
-  apply)  cmd_apply ;;
+  survey)   cmd_survey ;;
+  collapse) cmd_collapse ;;
+  base)     cmd_base ;;
+  apply)    cmd_apply ;;
 esac
