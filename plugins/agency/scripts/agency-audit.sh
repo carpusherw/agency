@@ -39,6 +39,13 @@ usage: agency-audit.sh survey [--root <path>] [--no-fetch]
            saying so: that is a base which cannot be determined, and it is not
            the same as a difference.
 
+           A value the roster gives that is nowhere in the profile is that
+           case — something else stands where the placeholder belongs, and
+           handing that on still rendered is how a base gets answered
+           confidently and wrongly. A key the live file simply does not have
+           is not that case: the absence is faithful, so it is emitted as it
+           stands and the difference is `base`'s to report.
+
     --agent  the seat, by the name the roster gives it.
     --what   frame     the profile, its job description collapsed to {{JD}};
                        compare against templates/agent/CLAUDE.md
@@ -183,19 +190,26 @@ digest_of()   { digest_pipe < "$1"; }
 # is the same wrong answer as a parser that does not run, just quieter.
 parses() {
   local status=0
+  # Asked before the redirection rather than after it: a file that cannot be
+  # opened fails the same way a canonicaliser that will not run does, and the
+  # message would then blame a program that never started.
+  [ -r "$1" ] || die "$2 cannot be read — check its permissions"
   canonical < "$1" >/dev/null || status=$?
   if [ "$status" = 0 ]; then
     return 0
   fi
+  # Only the exit code below is a finding about the content. Anything else is
+  # undecided, and saying so is the whole point — claiming either way is what
+  # this function exists to stop.
   if [ "$JSON" = "yes" ]; then
     case "$status" in
       "$CANNOT_PARSE")
         die "$2 does not parse as JSON, and $TEMPLATE is compared as JSON" ;;
       *)
-        die "python3 exited $status reading $2, so whether it parses as JSON is unknown. This is not a fault in the file." ;;
+        die "python3 exited $status reading $2, which is neither success nor a parse failure, so whether the content parses is unknown" ;;
     esac
   fi
-  die "cat exited $status reading $2, so its bytes could not be read. This is not a fault in the file."
+  die "cat exited $status reading $2, so its bytes could not be read"
 }
 
 # Read one field out of a plugin manifest arriving on stdin.
@@ -488,7 +502,9 @@ cmd_collapse() {
     *) die "unknown --what: $WHAT. Expected frame, jd or settings." ;;
   esac
   [ -f "$live" ] || die "no such file: $live"
+  [ -r "$live" ] || die "$live cannot be read — check its permissions"
   [ -f "$PLUGIN/$template" ] || die "the plugin has no template at $template"
+  [ -r "$PLUGIN/$template" ] || die "the template $template cannot be read — check its permissions"
 
   WHAT="$WHAT" LIVE="$live" SHAPE="$PLUGIN/$template" \
   SEAT_NAME="$SEAT_NAME" SEAT_TITLE="$SEAT_TITLE" SEAT_FOLDER="$SEAT_FOLDER" \
@@ -621,9 +637,16 @@ for name, value in sorted(values, key=lambda pair: len(pair[1]), reverse=True):
     if seen == 1:
         pieces = [piece.replace(value, placeholder) for piece in pieces]
     elif placeholder in shape:
-        note("%s carries %s, but %r is nowhere in %s outside the job "
-             "description, so nothing was put back for it"
-             % (shape_path, placeholder, value, live_path))
+        # Nothing was put back, so something else is standing where the
+        # placeholder belongs and would reach `base` still rendered. Unlike a
+        # key a JSON file does not have, an absence here cannot be written
+        # down: this collapse is directed by value, and a value that is not
+        # there leaves the output claiming a template shape it does not have.
+        die("%s substitutes %s, but %r — what the roster gives this seat — is "
+            "nowhere in %s outside the job description. Whatever stands in its "
+            "place would reach `base` still rendered, so the base cannot be "
+            "determined. The profile and the roster disagree about this value."
+            % (shape_path, placeholder, value, live_path))
 
 sys.stdout.write(pieces[0] + marker + pieces[1])
 COLLAPSE
@@ -635,7 +658,9 @@ cmd_base() {
   [ -n "$FILE" ] && [ -n "$TEMPLATE" ] || usage
   FILE="$(expand "$FILE")"
   [ -f "$FILE" ] || die "no such file: $FILE"
+  [ -r "$FILE" ] || die "$FILE cannot be read — check its permissions"
   [ -f "$PLUGIN/$TEMPLATE" ] || die "the plugin has no template at $TEMPLATE"
+  [ -r "$PLUGIN/$TEMPLATE" ] || die "the template $TEMPLATE cannot be read — check its permissions"
 
   # How to compare is a property of the template, not of the file handed over:
   # the template lives inside the plugin and its extension is the plugin
@@ -736,6 +761,7 @@ cmd_apply() {
   FILE="$(expand "$FILE")"
   FROM="$(expand "$FROM")"
   [ -f "$FROM" ] || die "no such file: $FROM"
+  [ -r "$FROM" ] || die "$FROM cannot be read — check its permissions"
   [ -d "$(dirname "$FILE")" ] || die "no such directory: $(dirname "$FILE")"
 
   local backup="" verb="created"
