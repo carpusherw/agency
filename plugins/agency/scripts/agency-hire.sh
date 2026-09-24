@@ -267,8 +267,13 @@ REPORT
   if [ -n "$RESUME_SESSION" ]; then
     cat <<REPORT
 The seat is running in the background. It kept the conversation from
-$RESUME_SESSION and now reads its new profile; resuming under --bg mints a new
-id, which is the one recorded above and in the roster.
+$RESUME_SESSION and now reads its new profile; resuming it under the agency's
+name forks a copy with a new id, which is the one recorded above and in the
+roster.
+
+The old session's record stays behind, stopped. Clearing it also deletes that
+session's scratch folder, though not its conversation:
+  claude rm ${RESUME_SESSION%%-*}
 
 REPORT
   else
@@ -282,7 +287,10 @@ or pick it out of:
   claude agents
 
 if it is ever stopped, start it again with:
-  cd $Q_DIR && claude --bg --resume $SESSION_ID --name $Q_NAME
+  claude respawn ${SESSION_ID%%-*}
+
+and if that answers "No job matching", from its own folder:
+  cd $Q_DIR && claude --bg --resume $SESSION_ID
 REPORT
 else
   cat <<REPORT

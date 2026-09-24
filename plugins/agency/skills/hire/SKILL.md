@@ -124,8 +124,9 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/agency-hire.sh \
 It creates the seat, starts the agent, reads back the session id it was given,
 and appends the entry to the roster.
 
-Resuming under `--bg` mints a new session id and keeps the conversation, so a
-relocated seat is recorded under its new id, not the one it was hired from.
+Resuming with the agency's name forks a copy under a new session id that keeps
+the conversation, so a relocated seat is recorded under its new id, not the one
+it was hired from.
 
 If the launch fails the script still succeeds — the seat is written, the roster
 entry says `session_id: null`, and the report says how to start it by hand.
@@ -137,7 +138,11 @@ Show where the seat was created and that the agent is already running: that
 start it again if it is ever stopped. The script prints all of these.
 
 For a relocation, say which session it came from and that the old id no longer
-runs — the seat carries that conversation now.
+runs — the seat carries that conversation now. The old session's background
+record stays behind as a stopped session; offer `claude rm <old short id>` to
+clear it, and run it only once the user agrees. It deletes that session's
+scratch folder — anything it parked in `$CLAUDE_JOB_DIR` goes with it — but not
+its conversation, which the seat already has.
 
 Tell the agency's roster owner that someone new is in the office, if that is not
 who ran this.

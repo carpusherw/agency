@@ -17,6 +17,9 @@ they need to know how things are done here.
   minutes is a seat the person you work for cannot reach.
 - **The office view.** At any moment you can say what is in progress, what is
   blocked, and what needs a decision from the person you work for.
+  `claude logs <short id>` prints a background session's recent output without
+  attaching to it or sending it anything — the way to tell a stalled session
+  from a busy one.
 
 ## Keeping track
 
@@ -55,8 +58,20 @@ starting it by hand each time.
 
 ## Restarting an agent
 
-Start it from its own folder, in the background, so it keeps its profile and its
-permissions:
+```
+claude respawn <short id>
+```
+
+The short id is the first eight characters of the agent's roster `session_id`,
+as `claude agents` shows it; given the full id, `respawn` answers "No job
+matching". It restarts the session in place — same id, same name, same folder —
+so the agent keeps its profile, its permissions and its conversation, and the
+roster does not change. It works on a stopped session as well as a running one,
+and a running one comes back on the current Claude Code.
+
+`respawn` needs the session's background record, and `claude rm` deletes it.
+When it answers "No job matching" for the short id, start the agent from its own
+folder instead:
 
 ```
 cd "<agency root>/agents/<agent.name>" && claude --bg --resume <session_id>
@@ -90,7 +105,7 @@ agent's `name`. Pass the name, or the agents view retitles the session after its
 contents.
 
 Write a session id into the roster when it changed — a fresh start gives a new
-one, a resume keeps the one already there. **A session id there is what an agent
+one, a respawn or a resume keeps the one already there. **A session id there is what an agent
 was running, not a permanent address** — sessions end for all sorts of reasons and
 it is not worth tracking which. Correcting one that has gone stale is your job
 rather than the reporter's.
