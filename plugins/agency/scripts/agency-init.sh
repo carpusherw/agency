@@ -189,7 +189,10 @@ or pick it out of:
   claude agents
 
 if it is ever stopped, start it again with:
-  cd $Q_DIR && claude --bg --resume $SESSION_ID --name $Q_NAME
+  claude respawn ${SESSION_ID%%-*}
+
+and if that answers "No job matching", from its own folder:
+  cd $Q_DIR && claude --bg --resume $SESSION_ID
 REPORT
 else
   cat <<REPORT

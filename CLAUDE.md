@@ -107,6 +107,19 @@ produces something that looks right and is not.
   and waits in the interactive session picker, so from inside a tool call it hangs
   exactly as a foreground `claude` does. Pass the id in full and lowercase, as
   `claude agents --json` prints it.
+- **`claude respawn` takes the short id, and only the short id.** The full id
+  answers `No job matching '<id>'`: the reverse of `--resume`. It restarts the
+  session in place — same id, name and working directory, new process — and
+  works on a stopped session as well as a running one. Measured on 2.1.281 with
+  throwaway sessions, the conversation intact afterwards.
+- **`claude stop` keeps the session's background record; `claude rm` deletes
+  it.** A stopped session drops out of `claude agents --json`, but its record
+  under `~/.claude/jobs/<short id>/` stays, and that record is what `respawn`
+  needs — after `rm` it answers `No job matching`. `rm` takes the session's
+  scratch folder (`$CLAUDE_JOB_DIR`) with it, but not the transcript:
+  `--bg --resume <full id>` still continues the conversation afterwards. A
+  session relocated with `--name` leaves its old record behind, stopped, and
+  removing it does not touch the copy.
 - **A session's working directory is fixed at launch.** `cd` inside a Bash call
   does not change it — the harness resets the shell afterwards — and
   directory-scoped tools resolve against the pinned directory rather than the
