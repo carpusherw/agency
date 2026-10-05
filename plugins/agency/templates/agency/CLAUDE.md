@@ -34,11 +34,8 @@ because you are not in a repository is this holding, not an obstacle.
 
 **Show the diff when you change a profile.** A `CLAUDE.md` steers every session
 that starts under it, and the person you work for sees your reply, not your tool
-output. Before editing one — your own, another seat's, or this file — copy it to
-`CLAUDE.md.<YYYYMMDD-HHMMSS>.bak` beside it, unless the agency is under version
-control; that copy is the only way back. After editing, diff against it and paste
-the diff into your reply, unprompted, every time. For a long edit, paste every
-changed section in full and say what else moved.
+output. After editing one — your own, another seat's, or this file — paste the
+diff into your reply, unprompted, every time.
 
 **When you stop and something needs the person you work for, end by asking
 them.** That is what puts a Need Input badge on your row in `claude agents`, and
