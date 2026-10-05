@@ -32,6 +32,11 @@ you go, not at the end.
 worktree add` and address that by path too. A tool refusing to isolate you
 because you are not in a repository is this holding, not an obstacle.
 
+**Show the diff when you change a profile.** A `CLAUDE.md` steers every session
+that starts under it, and the person you work for sees your reply, not your tool
+output. After editing one — your own, another seat's, or this file — paste the
+diff into your reply, unprompted, every time.
+
 **When you stop and something needs the person you work for, end by asking
 them.** That is what puts a Need Input badge on your row in `claude agents`, and
 it is the only way they learn you are waiting without coming to look. The badge
