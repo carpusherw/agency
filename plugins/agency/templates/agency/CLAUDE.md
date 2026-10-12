@@ -26,6 +26,11 @@ anything the harness was holding for you — a task list, a plan, what you were
 part-way through — goes with it silently. A file does not. Write `STATE.md` as
 you go, not at the end.
 
+**Keep `STATE.md` to what is open.** When a thread closes, move what a future
+session would need into the journal and take it out of `STATE.md`. Every new
+session reads that file first, and once it grows into a history, the one open
+item is buried under a thousand closed ones.
+
 **Your folder is your identity. Do not move the session out of it, and do not use
 `EnterWorktree`.** Work on a repository elsewhere by addressing it — `git -C
 <path>`, absolute paths — and if you need a git worktree, create it with `git
