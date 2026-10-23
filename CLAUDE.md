@@ -22,9 +22,11 @@ plugins/agency/
   skills/open/SKILL.md         the interview
   skills/hire/SKILL.md         the interview for a second seat
   skills/audit/SKILL.md        the comparison against an agency already open
+  skills/intern/SKILL.md       starting a one-job session that is not a seat
   scripts/agency-init.sh       the deterministic scaffold
   scripts/agency-hire.sh       the same, for hiring into an open agency
   scripts/agency-audit.sh      root, roster, base revision, and applying a patch
+  scripts/agency-intern.sh     the launch, for an intern
   templates/agency/            shared CLAUDE.md, roster.yaml
   templates/agent/             profile, STATE.md, settings.json
   templates/jd/ea.md           default executive-assistant job description
@@ -55,6 +57,16 @@ produces something that looks right and is not.
 
 - **`CLAUDE.md` is inherited from parent directories.** This is what makes the
   three-layer split work at all.
+- **A session outside the agency loads its `CLAUDE.md` only through
+  `--add-dir` plus `--settings`.** `--add-dir <root>` gives access but loads
+  nothing; `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` makes it load the
+  file, and for a `--bg` session that setting must travel in
+  `--settings '{"env":{...}}'` — exported in the launching shell it never
+  arrives, since the background service starts the session. Measured on 2.1.309
+  with throwaway sessions asked, without tools, to quote the agency file.
+  `--append-system-prompt-file` delivers the text too, but as system prompt
+  rather than as a `CLAUDE.md`. This is what lets an intern work in a
+  repository and still know the office.
 - **`--session-id` must be a UUID.** `claude --session-id agency-ea` fails with
   `Invalid session ID. Must be a valid UUID.` Agent names cannot be session ids.
 - **Agents run in the background, and only there.** `--bg` makes a session that
@@ -164,11 +176,11 @@ produces something that looks right and is not.
 
 ## Scope
 
-Opening an agency, hiring into it, and auditing one against the templates it
-was rendered from are covered. Archiving, renaming, and migrating an older
-layout are absent on purpose. Add them when something real needs them, not in
-anticipation — the same reason there are no hooks, budgets, or headcount limits
-yet.
+Opening an agency, hiring into it, starting an intern for it, and auditing one
+against the templates it was rendered from are covered. Archiving, renaming,
+and migrating an older layout are absent on purpose. Add them when something
+real needs them, not in anticipation — the same reason there are no hooks,
+budgets, or headcount limits yet.
 
 ## Versioning
 
