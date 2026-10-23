@@ -78,6 +78,19 @@ be stopped to be moved, which the skill asks you about first.
 Once there is more than one, agents reach each other with `SendMessage`, by the
 name their sessions carry in `claude agents`.
 
+## Interns
+
+```
+/agency:intern
+```
+
+An agent can hand a single job to a session of its own without hiring anyone.
+An intern has no seat, profile or state; its brief is the whole job, and when
+the job is done it is stopped. It can work anywhere — a repository, say — and
+still loads the agency's conventions, so it knows who else is in the office and
+can work with them, while reporting to the agent that started it. It shows in
+`claude agents` as `<logoji> [<agency name>]: <agent>'s intern - <label>`.
+
 ## When an agent stops
 
 Sessions end, and that is the premise rather than a failure: the agent is its

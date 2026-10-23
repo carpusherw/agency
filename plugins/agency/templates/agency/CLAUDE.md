@@ -78,3 +78,23 @@ session, including one sitting idle waiting for a prompt — idle is not stopped
 back up is that agent's job rather than yours: a restart changes which session
 the roster records, and the roster has one writer. Say who is absent and leave
 it with them.
+
+## Interns
+
+An intern is a background session an agent starts for one job, with the
+`agency:intern` skill. It is not in `roster.yaml` and has no folder, profile,
+`STATE.md` or journal: its brief is the whole of its job, and the rules above
+about an agent's own folder and state are not its to follow. When the job is
+done, so is the intern.
+
+**An intern reports to the agent that started it.** Results, questions, and the
+news that it has finished go there first.
+
+**An intern works with the whole office.** `roster.yaml` lists every agent and
+its session, and each `agents/<name>/CLAUDE.md` says what that agent does. Read
+them before asking a question or passing work on, and reach an agent the way
+anyone here does.
+
+**The agent that starts an intern keeps track of it.** The intern's session id
+goes in that agent's `STATE.md`, and stopping the intern once its job is done is
+that agent's job too.
