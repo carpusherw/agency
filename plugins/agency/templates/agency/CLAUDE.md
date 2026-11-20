@@ -31,6 +31,12 @@ session would need into the journal and take it out of `STATE.md`. Every new
 session reads that file first, and once it grows into a history, the one open
 item is buried under a thousand closed ones.
 
+**An open thread keeps its current standing in `STATE.md`, not its history.**
+Where it stands, what comes next, who owes it, and the decisions that still
+bind — enough to act on without opening anything else. When a session start
+tells you the file is over its budget, trim it with the `agency:tidy` skill
+before you take on anything new.
+
 **Your folder is your identity. Do not move the session out of it, and do not use
 `EnterWorktree`.** Work on a repository elsewhere by addressing it — `git -C
 <path>`, absolute paths — and if you need a git worktree, create it with `git
