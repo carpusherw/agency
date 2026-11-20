@@ -23,10 +23,13 @@ plugins/agency/
   skills/hire/SKILL.md         the interview for a second seat
   skills/audit/SKILL.md        the comparison against an agency already open
   skills/intern/SKILL.md       starting a one-job session that is not a seat
+  skills/tidy/SKILL.md         trimming a seat's STATE.md back to what is open
+  hooks/hooks.json             the session-start check on a seat's STATE.md
   scripts/agency-init.sh       the deterministic scaffold
   scripts/agency-hire.sh       the same, for hiring into an open agency
   scripts/agency-audit.sh      root, roster, base revision, and applying a patch
   scripts/agency-intern.sh     the launch, for an intern
+  scripts/agency-state.sh      a seat's STATE.md: the check, its sizes, the archive
   templates/agency/            shared CLAUDE.md, roster.yaml
   templates/agent/             profile, STATE.md, settings.json
   templates/jd/ea.md           default executive-assistant job description
@@ -173,14 +176,38 @@ produces something that looks right and is not.
   at once.
 - **`auto` permission mode is unavailable on Haiku 4.5.** The session falls back
   to manual mode, so a seat written as `auto` is not `auto` on a small model.
+- **A `SessionStart` hook's stdout lands in the session's context, and the event
+  fires again after every compaction.** This is the only way to tell a seat
+  something it did not ask about, and the compaction firing is what reaches a
+  seat that never restarts. Measured on 2.1.329 for a start: a throwaway `-p`
+  session launched in a seat folder with the plugin on `--plugin-dir`, asked
+  without tools to quote the notice, quoted it, and the same session in a seat
+  under its budget found nothing. The compaction firing is read off long-running
+  sessions' transcripts, which record a `SessionStart:compact` hook event after
+  each one. `PostCompact` is not a substitute: its output goes to the user and
+  never to the model.
+- **A plugin's `hooks/hooks.json` loads without being named in the manifest, in
+  every session where the plugin is enabled.** Measured in the same test. A
+  plugin enabled for the user therefore runs its hook in sessions that have
+  nothing to do with any agency, so `agency-state.sh check` has to recognise a
+  non-seat quickly and say nothing. A session already running keeps the hooks it
+  started with until it restarts or runs `/reload-plugins` — from the
+  documentation, not measured here.
 
 ## Scope
 
-Opening an agency, hiring into it, starting an intern for it, and auditing one
-against the templates it was rendered from are covered. Archiving, renaming,
-and migrating an older layout are absent on purpose. Add them when something
-real needs them, not in anticipation — the same reason there are no hooks,
-budgets, or headcount limits yet.
+Opening an agency, hiring into it, starting an intern for it, auditing one
+against the templates it was rendered from, and keeping a seat's `STATE.md` to
+what is open are covered. Archiving, renaming, and migrating an older layout
+are absent on purpose. Add them when something real needs them, not in
+anticipation — the same reason there are no token budgets or headcount limits
+yet.
+
+The one hook is there because the rule it backs did not hold as prose. "Keep
+`STATE.md` to what is open" sat in the shared conventions, and every seat that
+stayed busy grew its file back within weeks. A rule with no number and no moment
+that triggers it loses to "write it down as you go", so the measuring is a
+script's job and only the trimming is an agent's.
 
 ## Versioning
 

@@ -113,6 +113,28 @@ full and lowercase. Pass nothing else: a resumed session already remembers its
 name, and any extra flag starts a copy under a new id rather than resuming the
 session itself.
 
+## Keeping `STATE.md` small
+
+```
+/agency:tidy
+```
+
+Every session of a seat reads its `STATE.md` first, so the file is meant to hold
+only what is still open. Left alone it becomes a history: writing down what just
+happened is the safe thing to do mid-task, and nothing marks the moment a thread
+closes.
+
+So the plugin measures it. At each session start, and after each compaction, a
+seat whose `STATE.md` is over 30 kB is told so and pointed at `agency:tidy`. The
+skill copies the whole file to `journal/state-archive-<date>.md` first, then
+cuts closed threads and the history of open ones, and rewrites the file around
+where each open thread stands. What a later session would need from a closed
+thread goes to the journal; everything else that was cut stays in that copy. A
+seat under its budget hears nothing.
+
+The budget is a prompt to look, not a quota. Set `AGENCY_STATE_BUDGET_BYTES` in a
+seat's `settings.json` `env` to move it for that seat.
+
 ## Keeping an agency current
 
 ```
@@ -134,6 +156,11 @@ plainly when it cannot tell.
 Nothing is written until you have seen it and said yes, and whatever it
 replaces is backed up first. Your own edits are yours: a file it cannot trace
 back to a template it reports and leaves alone.
+
+Skills, scripts and hooks are not rendered into an agency at all — they are the
+plugin, so updating the plugin is what delivers them. A session already running
+keeps the hooks it started with, so a seat picks up a new hook at its next start
+(`claude respawn <short id>`), not at the moment of the update.
 
 ## Naming
 
