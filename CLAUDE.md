@@ -182,17 +182,30 @@ produces something that looks right and is not.
   seat that never restarts. Measured on 2.1.329 for a start: a throwaway `-p`
   session launched in a seat folder with the plugin on `--plugin-dir`, asked
   without tools to quote the notice, quoted it, and the same session in a seat
-  under its budget found nothing. The compaction firing is read off long-running
-  sessions' transcripts, which record a `SessionStart:compact` hook event after
-  each one. `PostCompact` is not a substitute: its output goes to the user and
-  never to the model.
+  under its budget found nothing. Measured for a compaction in a live office: a
+  seat over its budget was compacted, the notice arrived on
+  `SessionStart:compact`, and the seat trimmed its file without being asked.
+  `PostCompact` is not a substitute: its output goes to the user and never to
+  the model.
+- **A notice is acted on at the seat's next turn, not when it arrives.** A hook
+  adds to the context and prompts nothing, so a seat that was restarted to pick
+  up a plugin sits idle with the notice unread until someone gives it a turn.
+  Measured: a restarted seat over its budget did nothing until it was sent
+  "continue", then finished the step it had been on and trimmed. The same
+  restart ended the background tasks that session was running, a watch among
+  them, and nothing restarts those either until the seat is prompted.
 - **A plugin's `hooks/hooks.json` loads without being named in the manifest, in
   every session where the plugin is enabled.** Measured in the same test. A
   plugin enabled for the user therefore runs its hook in sessions that have
   nothing to do with any agency, so `agency-state.sh check` has to recognise a
-  non-seat quickly and say nothing. A session already running keeps the hooks it
-  started with until it restarts or runs `/reload-plugins` — from the
-  documentation, not measured here.
+  non-seat quickly and say nothing.
+- **A session already running keeps the hooks it started with.** Measured: a
+  seat started before a plugin update was compacted after it and ran only the
+  hooks it already had; restarted, it got the new hook's notice on
+  `SessionStart:resume`. `/reload-plugins` does the same without a restart,
+  also measured: a second seat started before the update had it run, was then
+  compacted, and got the notice on `SessionStart:compact` with no restart in
+  between.
 
 ## Scope
 

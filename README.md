@@ -160,7 +160,10 @@ back to a template it reports and leaves alone.
 Skills, scripts and hooks are not rendered into an agency at all — they are the
 plugin, so updating the plugin is what delivers them. A session already running
 keeps the hooks it started with, so a seat picks up a new hook at its next start
-(`claude respawn <short id>`), not at the moment of the update.
+(`claude respawn <short id>`) or when `/reload-plugins` is run in it, not at the
+moment of the update. A restarted seat
+sits idle until it is given a turn, and the restart ends whatever it had running
+in the background, so send it a prompt afterwards.
 
 ## Naming
 
