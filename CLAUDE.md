@@ -202,8 +202,10 @@ produces something that looks right and is not.
 - **A session already running keeps the hooks it started with.** Measured: a
   seat started before a plugin update was compacted after it and ran only the
   hooks it already had; restarted, it got the new hook's notice on
-  `SessionStart:resume`. That `/reload-plugins` does the same without a restart
-  is from the documentation, not measured here.
+  `SessionStart:resume`. `/reload-plugins` does the same without a restart,
+  also measured: a second seat started before the update had it run, was then
+  compacted, and got the notice on `SessionStart:compact` with no restart in
+  between.
 
 ## Scope
 
